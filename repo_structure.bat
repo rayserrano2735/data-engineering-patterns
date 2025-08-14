@@ -1,17 +1,31 @@
 @echo off
-REM Create dbt-patterns folder structure with .gitkeep files
+REM Add .gitkeep files to all empty directories in the repository
 
 powershell -ExecutionPolicy Bypass -Command ^
-"$folders = @('dbt-patterns\macros', 'dbt-patterns\models\staging', 'dbt-patterns\models\intermediate', 'dbt-patterns\models\marts', 'dbt-patterns\tests'); ^
-foreach ($folder in $folders) { ^
-    New-Item -ItemType Directory -Path $folder -Force ^| Out-Null; ^
-    New-Item -ItemType File -Path \"$folder\.gitkeep\" -Force ^| Out-Null; ^
-    Write-Host \"Created: $folder with .gitkeep\" -ForegroundColor Green; ^
+"Write-Host 'Scanning for empty directories...' -ForegroundColor Cyan; ^
+$emptyDirs = Get-ChildItem -Path . -Recurse -Directory ^| Where-Object { ^
+    (Get-ChildItem $_.FullName -Force ^| Where-Object { $_.Name -ne '.gitkeep' }).Count -eq 0 ^
 }; ^
-Write-Host \"`nFolder structure created successfully!\" -ForegroundColor Cyan; ^
-Write-Host \"You can now run:\" -ForegroundColor Yellow; ^
-Write-Host \"  git add dbt-patterns/\" -ForegroundColor White; ^
-Write-Host \"  git commit -m 'Add dbt patterns folder structure'\" -ForegroundColor White; ^
+if ($emptyDirs.Count -eq 0) { ^
+    Write-Host 'No empty directories found that need .gitkeep files.' -ForegroundColor Yellow; ^
+} else { ^
+    Write-Host \"Found $($emptyDirs.Count) empty directory(ies). Adding .gitkeep files...\" -ForegroundColor Green; ^
+    foreach ($dir in $emptyDirs) { ^
+        $gitkeepPath = Join-Path $dir.FullName '.gitkeep'; ^
+        if (-not (Test-Path $gitkeepPath)) { ^
+            New-Item -ItemType File -Path $gitkeepPath -Force ^| Out-Null; ^
+            $relativePath = Resolve-Path -Relative $dir.FullName; ^
+            Write-Host \"  Added .gitkeep to: $relativePath\" -ForegroundColor White; ^
+        } else { ^
+            $relativePath = Resolve-Path -Relative $dir.FullName; ^
+            Write-Host \"  .gitkeep already exists in: $relativePath\" -ForegroundColor Gray; ^
+        } ^
+    } ^
+    Write-Host \"`nAll empty directories now have .gitkeep files!\" -ForegroundColor Green; ^
+}; ^
+Write-Host \"`nYou can now run:\" -ForegroundColor Yellow; ^
+Write-Host \"  git add .\" -ForegroundColor White; ^
+Write-Host \"  git commit -m 'Add .gitkeep files to maintain folder structure'\" -ForegroundColor White; ^
 Write-Host \"  git push origin main\" -ForegroundColor White"
 
 pause
