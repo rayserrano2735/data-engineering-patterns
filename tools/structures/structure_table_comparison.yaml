@@ -1,0 +1,35 @@
+# Filename: structure_table_comparison.yaml
+# Structure definition for table-comparison pattern
+# Run with: python create_structure.py structure_table_comparison.yaml
+
+sql-patterns:
+  table-comparison:
+    __files__:
+      - README.md                           # User's Guide
+      - compare_tables_dynamic.sql          # Basic dynamic comparison
+      - compare_tables_with_mapping.sql     # Mapping table approach  
+      - column_mapper.py                    # Interactive mapping tool
+    
+    examples:
+      __files__:
+        - customer_migration_example.sql
+        - mapping_customers.json
+        - sample_output.txt
+    
+    database-specific:
+      __files__:
+        - snowflake_version.sql
+        - bigquery_version.sql
+        - postgres_version.sql
+        - mysql_version.sql
+        - redshift_version.sql
+    
+    mappings:  # Store saved mapping configurations
+      __files__:
+        - .gitkeep  # Will store mapping_*.json files
+    
+    tests:  # Test cases and validation scripts
+      __files__:
+        - test_null_handling.sql
+        - test_data_types.sql
+        - test_performance.sql

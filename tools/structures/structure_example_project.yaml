@@ -1,0 +1,47 @@
+# Filename: structure_example_project.yaml
+# Template for creating new pattern structures
+# Copy and modify this file for new patterns
+
+# Example SQL pattern structure
+sql-patterns:
+  pattern-name:  # Change this to your pattern name
+    __files__:
+      - README.md                    # Documentation
+      - main_solution.sql            # Primary implementation
+      - alternative_solution.sql     # Alternative approach
+    
+    examples:
+      __files__:
+        - example1.sql
+        - example2.sql
+    
+    database-specific:
+      __files__:
+        - postgres_version.sql
+        - mysql_version.sql
+        - snowflake_version.sql
+    
+    tests: null  # Empty folder for test cases
+
+# Example Python pattern structure  
+python-patterns:
+  pattern-name:  # Change this to your pattern name
+    __files__:
+      - README.md
+      - main.py
+      - requirements.txt
+    
+    examples: null
+    tests: null
+
+# Example Spark pattern structure
+spark-patterns:
+  pattern-name:  # Change this to your pattern name
+    __files__:
+      - README.md
+      - pattern_implementation.py
+      - spark_job.py
+    
+    examples: null
+    benchmarks: null
+    tests: null
