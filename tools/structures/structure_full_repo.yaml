@@ -15,9 +15,14 @@ dbt-patterns:
 # SQL Patterns (new section with table-comparison)
 sql-patterns:
   table-comparison:
-    # Just create the folder structure, no empty files
-    examples: null      # Empty folder for examples
-    database-specific: null  # Empty folder for database variants
+    __files__:
+      - README.md                           # Will be replaced with User's Guide
+      - compare_tables_dynamic.sql          # Will be replaced with dynamic comparison
+      - compare_tables_with_mapping.sql     # Will be replaced with mapping approach
+      - column_mapper.py                    # Will be replaced with interactive tool
+    
+    examples: null      # Empty folder for future examples
+    database-specific: null  # Empty folder for database variants  
     mappings: null      # Empty folder for saved mappings
     tests: null         # Empty folder for test cases
   
