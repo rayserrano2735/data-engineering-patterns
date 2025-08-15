@@ -15,33 +15,11 @@ dbt-patterns:
 # SQL Patterns (new section with table-comparison)
 sql-patterns:
   table-comparison:
-    __files__:
-      - README.md                           # User's Guide (from TABLE_COMPARISON_USER_GUIDE.md)
-      - compare_tables_dynamic.sql          # Basic dynamic comparison
-      - compare_tables_with_mapping.sql     # Mapping table approach  
-      - column_mapper.py                    # Interactive mapping tool
-    
-    examples:
-      __files__:
-        - customer_migration_example.sql
-        - mapping_customers.json
-        - sample_output.txt
-    
-    database-specific:
-      __files__:
-        - snowflake_version.sql
-        - bigquery_version.sql
-        - postgres_version.sql
-        - mysql_version.sql
-        - redshift_version.sql
-    
-    mappings: null  # Will store saved mapping_*.json files
-    
-    tests:  # Test cases and validation scripts
-      __files__:
-        - test_null_handling.sql
-        - test_data_types.sql
-        - test_performance.sql
+    # Just create the folder structure, no empty files
+    examples: null      # Empty folder for examples
+    database-specific: null  # Empty folder for database variants
+    mappings: null      # Empty folder for saved mappings
+    tests: null         # Empty folder for test cases
   
   # Placeholder for other SQL patterns
   window-functions: null
@@ -105,19 +83,3 @@ data-modeling-patterns:
   data-vault: null
   slowly-changing-dimensions: null
   snapshots: null
-
-# Tools and Utilities (keeping our helper scripts organized)
-tools:
-  __files__:
-    - create_structure.py
-    - create_structure.bat
-    - generate_tree.py
-    - generate_tree.bat
-    - add-gitkeep-to-empty-folders.bat
-    - README.md                         # Tools documentation
-  
-  structures:  # Store all structure definitions
-    __files__:
-      - structure_full_repo.yaml        # This complete repo structure
-      - structure_table_comparison.yaml # Table comparison pattern only
-      - structure_example_project.yaml  # Example for new patterns
