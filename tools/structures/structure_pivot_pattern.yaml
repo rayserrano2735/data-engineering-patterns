@@ -1,0 +1,25 @@
+# Filename: structure_pivot_pattern.yaml
+# Structure for SQL pivot pattern
+# Save this in tools/structures/
+
+sql-patterns:
+  pivot-unpivot:
+    __files__:
+      - README.md                    # Documentation
+      - pivot_examples.sql           # Main pivot examples
+      - unpivot_examples.sql         # Unpivot examples
+      - dynamic_pivot.sql            # Dynamic pivot solutions
+    
+    examples:
+      __files__:
+        - sales_by_quarter.sql       # Classic use case
+        - survey_responses.sql        # Survey data pivoting
+    
+    database-specific:
+      __files__:
+        - postgres_crosstab.sql      # PostgreSQL crosstab
+        - snowflake_pivot.sql        # Snowflake syntax
+        - bigquery_pivot.sql         # BigQuery syntax
+        - sql_server_pivot.sql       # SQL Server syntax
+    
+    tests: null                      # Test cases folder
