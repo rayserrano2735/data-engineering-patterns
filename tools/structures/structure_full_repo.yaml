@@ -1,0 +1,123 @@
+# Filename: structure_full_repo.yaml
+# Complete data-engineering-patterns repository structure
+# Including existing dbt-patterns and new table-comparison package
+# Run with: python create_structure.py structure_full_repo.yaml
+
+# DBT Patterns (existing structure)
+dbt-patterns:
+  macros: null
+  models:
+    staging: null
+    intermediate: null
+    marts: null
+  tests: null
+
+# SQL Patterns (new section with table-comparison)
+sql-patterns:
+  table-comparison:
+    __files__:
+      - README.md                           # User's Guide (from TABLE_COMPARISON_USER_GUIDE.md)
+      - compare_tables_dynamic.sql          # Basic dynamic comparison
+      - compare_tables_with_mapping.sql     # Mapping table approach  
+      - column_mapper.py                    # Interactive mapping tool
+    
+    examples:
+      __files__:
+        - customer_migration_example.sql
+        - mapping_customers.json
+        - sample_output.txt
+    
+    database-specific:
+      __files__:
+        - snowflake_version.sql
+        - bigquery_version.sql
+        - postgres_version.sql
+        - mysql_version.sql
+        - redshift_version.sql
+    
+    mappings: null  # Will store saved mapping_*.json files
+    
+    tests:  # Test cases and validation scripts
+      __files__:
+        - test_null_handling.sql
+        - test_data_types.sql
+        - test_performance.sql
+  
+  # Placeholder for other SQL patterns
+  window-functions: null
+  ctes-and-subqueries: null
+  optimization: null
+  data-quality-checks: null
+
+# Spark Patterns (placeholder structure)
+spark-patterns:
+  transformations: null
+  optimizations: null
+  udfs: null
+  ml-pipelines: null
+
+# Airflow Patterns (placeholder structure)
+airflow-patterns:
+  dags: null
+  operators: null
+  sensors: null
+  best-practices: null
+
+# Kafka Patterns (placeholder structure)
+kafka-patterns:
+  producers: null
+  consumers: null
+  streaming: null
+  connectors: null
+
+# Python Patterns (placeholder structure)
+python-patterns:
+  data-processing: null
+  testing: null
+  logging: null
+  config-management: null
+
+# Cloud Patterns (placeholder structure)
+cloud-patterns:
+  aws:
+    s3: null
+    lambda: null
+    glue: null
+    athena: null
+  gcp:
+    bigquery: null
+    dataflow: null
+    pubsub: null
+  azure:
+    data-factory: null
+    synapse: null
+    databricks: null
+
+# Docker and Orchestration
+docker-patterns:
+  dockerfiles: null
+  docker-compose: null
+  kubernetes: null
+
+# Data Modeling Patterns
+data-modeling-patterns:
+  dimensional-modeling: null
+  data-vault: null
+  slowly-changing-dimensions: null
+  snapshots: null
+
+# Tools and Utilities (keeping our helper scripts organized)
+tools:
+  __files__:
+    - create_structure.py
+    - create_structure.bat
+    - generate_tree.py
+    - generate_tree.bat
+    - add-gitkeep-to-empty-folders.bat
+    - README.md                         # Tools documentation
+  
+  structures:  # Store all structure definitions
+    __files__:
+      - structure_full_repo.yaml        # This complete repo structure
+      - structure_table_comparison.yaml # Table comparison pattern only
+      - structure_example_project.yaml  # Example for new patterns
