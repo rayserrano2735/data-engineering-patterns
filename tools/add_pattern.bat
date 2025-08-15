@@ -33,11 +33,11 @@ echo Available Pattern Structures:
 echo ------------------------------
 set /a count=0
 
-REM Store files in array
-for %%f in (%STRUCTURES_PATH%\*.yaml %STRUCTURES_PATH%\*.yml) do (
+REM Try to list files using DIR command which is more reliable
+for /f "tokens=*" %%f in ('dir /b %STRUCTURES_PATH%\*.yaml %STRUCTURES_PATH%\*.yml 2^>nul') do (
     set /a count+=1
-    set "file[!count!]=%%~nxf"
-    echo   !count!. %%~nxf
+    set "file[!count!]=%%f"
+    echo   !count!. %%f
 )
 
 REM Check if any files found
