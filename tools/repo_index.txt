@@ -1,0 +1,7 @@
+https://raw.githubusercontent.com/rayserrano2735/data-engineering-patterns/main/sql-patterns/table-comparison/README.md
+https://raw.githubusercontent.com/rayserrano2735/data-engineering-patterns/main/sql-patterns/table-comparison/compare_tables_dynamic.sql
+https://raw.githubusercontent.com/rayserrano2735/data-engineering-patterns/main/sql-patterns/table-comparison/column_mapper.py
+https://raw.githubusercontent.com/rayserrano2735/data-engineering-patterns/main/tools/create_structure.py
+https://raw.githubusercontent.com/rayserrano2735/data-engineering-patterns/main/tools/generate_tree.py
+https://raw.githubusercontent.com/rayserrano2735/data-engineering-patterns/main/SETUP_GUIDE.md
+https://raw.githubusercontent.com/rayserrano2735/data-engineering-patterns/main/CONTRIBUTING.md
