@@ -1,9 +1,7 @@
 # Filename: python-essentials/fundamentals_for_sql_experts.py
 """
 Python Fundamentals for SQL Experts
-Co-authored by Ray & Aitana (Intelligence²)
-Everything you need before touching Pandas or Airflow
-Run this file section by section to build muscle memory
+Essential patterns for data engineering
 """
 
 # ============================================
@@ -387,20 +385,3 @@ employees = [
 ]
 print(f"Grouped: {group_by_key(employees, 'dept')}")
 
-# ============================================
-# NEXT STEPS
-# ============================================
-
-"""
-1. Run this ENTIRE file to see all outputs
-2. Modify each function to understand how it works
-3. Break things on purpose to see error messages
-4. Practice the exercises until they're natural
-5. Then move on to Pandas (which builds on these)
-
-Remember: This is just your entry ticket.
-Your SQL expertise is your real value.
-
-Time estimate: 2-3 hours to be comfortable with all of this.
-Then you're ready for Pandas!
-"""

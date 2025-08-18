@@ -1,9 +1,7 @@
 # Filename: interview-prep/fix_these_for_practice.py
 """
-INTERVIEW PREP - Broken Code Exercises
-Focused on what they ACTUALLY ask in Data Engineering interviews
-Fix these, and you're ready!
-Co-authored by Ray & Aitana (Intelligence²)
+Broken Code Exercises
+
 """
 
 import pandas as pd
@@ -265,18 +263,11 @@ def second_highest_fixed(numbers):
 # ============================================
 
 """
-1. Try to fix each function
-2. Run the test cases to see if it works
-3. Check hints if stuck
-4. Compare with solutions
-5. Understanding WHY it was broken is more important than fixing it
 
-FOCUS ORDER FOR INTERVIEWS:
+FOCUS ORDER:
 1. String manipulation (1-2) - They ALWAYS ask
 2. Classic algorithms (8-10) - Common filters
 3. Pandas operations (5-7) - Required for data roles
 4. List operations (3-4) - Basic competency
 
-Remember: In the interview, mention "I'd handle this edge case..." 
-to show you're thinking about production code!
 """
