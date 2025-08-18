@@ -4,7 +4,7 @@ Broken Code Exercises
 
 """
 
-import pandas as pd
+#import pandas as pd
 
 # ============================================
 # STRING MANIPULATION (They love this)
@@ -16,17 +16,28 @@ def parse_name(full_name):
     BUG: Doesn't handle None, empty string, or single names
     FIX: Add proper checks
     """
+    #full_name = full_name.strip()
+    
+    # Normalize full_name
+    match full_name:
+        case None:
+            full_name = "N/A"
+        case "":
+            full_name = "N/A"
+        case "  ":
+            full_name = "N/A"
+        
     parts = full_name.split()  # BUG: Will crash on None!
     first = parts[0]  # BUG: Will crash if parts is empty!
-    last = parts[1]   # BUG: Will crash if only one name!
+    last = parts[1] if len(parts) > 1 else ""   # BUG: Will crash if only one name!
     return {"first": first, "last": last}
 
 # Test cases (some will crash):
-# print(parse_name("John Smith"))    # Works
-# print(parse_name("Cher"))          # Crashes - single name
-# print(parse_name(None))            # Crashes - None
-# print(parse_name(""))              # Crashes - empty string
-# print(parse_name("  "))            # Crashes - just spaces
+print(parse_name("John Smith"))    # Works
+print(parse_name("Cher"))          # Crashes - single name
+print(parse_name(None))            # Crashes - None
+print(parse_name(""))              # Crashes - empty string
+print(parse_name("  "))            # Crashes - just spaces
 
 
 # BROKEN 2: Phone Number Cleaner
