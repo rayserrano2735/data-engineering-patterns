@@ -68,8 +68,10 @@ def parse_name(full_name):
         return {"first": parts[0], "last": " ".join(parts[1:])}
 
 # Test the name parser
-test_names = ["John Smith", "Cher", "Mary Jane Watson", None, ""]
+test_names = ["John Smith", "Cher", "Mary Jane Watson", None, ""] #-- , None ,""
 for test_name in test_names:
+    if test_name is None:
+        test_name = "N/A"
     result = parse_name(test_name)
     print(f"{test_name:20} -> {result}")
 
