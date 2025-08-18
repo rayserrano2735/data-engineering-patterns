@@ -10,6 +10,21 @@ This repository serves as:
 - **Learning Library**: Well-documented patterns with explanations of the "why" behind the code
 - **Teaching Material**: Foundation for courses and mentoring
 
+## Code Philosophy
+
+This repository prioritizes **maintainability over cleverness**. 
+
+The code is intentionally written to be:
+- Clear and readable by developers at any level
+- Debuggable at 3 AM during production issues  
+- Maintainable by junior developers
+- Self-documenting through clarity
+
+This is a conscious architectural choice, following the same principles as dbt: 
+"Code is read 100x more than it's written."
+
+We optimize for the on-call engineer, not the compiler.
+
 ## 📚 Pattern Categories
 
 ### [SQL Patterns](./sql-patterns/)
