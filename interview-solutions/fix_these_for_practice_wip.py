@@ -16,7 +16,6 @@ def parse_name(full_name):
     BUG: Doesn't handle None, empty string, or single names
     FIX: Add proper checks
     """
-    #full_name = full_name.strip()
     
     # Normalize full_name
     match full_name:
