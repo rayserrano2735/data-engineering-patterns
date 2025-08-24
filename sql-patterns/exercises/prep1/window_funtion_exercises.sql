@@ -202,6 +202,18 @@ WHERE TITLE_TYPE = 'movie'
     AND RUNTIME_MINUTES IS NOT NULL
 ORDER BY RUNTIME_MINUTES;
 
+--- SOLUTION
+WITH PCTS AS
+(SELECT DISTINCT
+    RUNTIME_MINUTES,
+    PERCENT_RANK() OVER (ORDER BY RUNTIME_MINUTES) AS percentile_rank
+FROM title_basics
+WHERE TITLE_TYPE = 'movie'
+    AND RUNTIME_MINUTES IS NOT NULL
+ORDER BY RUNTIME_MINUTES)
+SELECT RUNTIME_MINUTES, percentile_rank
+FROM PCTS 
+
 
 -- EXERCISE 8: Multiple Window Functions
 -- Complex: Rank actors by number of movies, show running total of their movies

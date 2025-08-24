@@ -379,3 +379,164 @@ FROM your_solution;
 
 
 -- More tests for exercises 7-10 available when needed!
+
+-- TEST 7: PERCENT_RANK
+WITH your_solution AS (
+WITH PCTS AS
+(SELECT DISTINCT
+    RUNTIME_MINUTES,
+    PERCENT_RANK() OVER (ORDER BY RUNTIME_MINUTES) AS percentile_rank
+FROM title_basics
+WHERE TITLE_TYPE = 'movie'
+    AND RUNTIME_MINUTES IS NOT NULL
+ORDER BY RUNTIME_MINUTES)
+SELECT RUNTIME_MINUTES, percentile_rank
+FROM PCTS 
+),
+expected AS (
+    SELECT DISTINCT
+        RUNTIME_MINUTES,
+        PERCENT_RANK() OVER (ORDER BY RUNTIME_MINUTES) as percentile_rank
+    FROM title_basics
+    WHERE TITLE_TYPE = 'movie'
+        AND RUNTIME_MINUTES IS NOT NULL
+)
+SELECT 
+    CASE 
+        WHEN COUNT(*) = 0 THEN '⚠️ No results - add your solution'
+        WHEN EXISTS (
+            SELECT 1 FROM your_solution y 
+            JOIN expected e ON y.RUNTIME_MINUTES = e.RUNTIME_MINUTES 
+            WHERE ABS(COALESCE(y.percentile_rank,0) - e.percentile_rank) > 0.001
+        ) THEN '❌ PERCENT_RANK calculation incorrect'
+        ELSE '✅ CORRECT! PERCENT_RANK working perfectly!'
+    END as result
+FROM your_solution;
+
+
+-- TEST 8: Multiple Window Functions
+WITH your_solution AS (
+    -- PASTE YOUR EXERCISE 8 SOLUTION HERE
+    SELECT 
+        PRIMARY_NAME,
+        movie_count,
+        NULL::INT as actor_rank,
+        NULL::BIGINT as running_total
+    FROM (SELECT 'test' as PRIMARY_NAME, 1 as movie_count) -- placeholder
+),
+expected AS (
+    WITH actor_counts AS (
+        SELECT 
+            tp.PERSON_CODE,
+            nb.PRIMARY_NAME,
+            COUNT(DISTINCT tp.TITLE_CODE) as movie_count
+        FROM title_principals tp
+        JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+        JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
+        WHERE tb.TITLE_TYPE = 'movie'
+            AND tp.JOB_CATEGORY IN ('actor', 'actress')
+        GROUP BY tp.PERSON_CODE, nb.PRIMARY_NAME
+        HAVING COUNT(DISTINCT tp.TITLE_CODE) > 50
+    )
+    SELECT 
+        PRIMARY_NAME,
+        movie_count,
+        DENSE_RANK() OVER (ORDER BY movie_count DESC) as actor_rank,
+        SUM(movie_count) OVER (ORDER BY movie_count DESC, PRIMARY_NAME 
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as running_total
+    FROM actor_counts
+    ORDER BY movie_count DESC
+    LIMIT 20
+)
+SELECT 
+    CASE 
+        WHEN COUNT(*) <= 1 THEN '⚠️ No results - add your solution'
+        WHEN EXISTS (
+            SELECT 1 FROM your_solution y 
+            JOIN expected e ON y.PRIMARY_NAME = e.PRIMARY_NAME 
+            WHERE y.actor_rank != e.actor_rank 
+               OR y.running_total != e.running_total
+        ) THEN '❌ Multiple window functions incorrect'
+        ELSE '✅ CORRECT! Multiple windows working!'
+    END as result
+FROM your_solution;
+
+
+-- TEST 9: Gap and Island (Complex - simplifying for exercise)
+WITH your_solution AS (
+    -- PASTE YOUR EXERCISE 9 SOLUTION HERE
+    SELECT 
+        PERSON_CODE,
+        NULL::INT as career_period_start,
+        NULL::INT as career_period_end,
+        NULL::INT as years_active
+    FROM (SELECT 'nm0000093' as PERSON_CODE) -- placeholder
+),
+validation AS (
+    -- Simplified test - just check if you found some career periods
+    SELECT COUNT(DISTINCT career_period_start) as period_count
+    FROM your_solution
+    WHERE PERSON_CODE = 'nm0000093'
+)
+SELECT 
+    CASE 
+        WHEN period_count = 0 THEN '⚠️ No results - add your solution'
+        WHEN period_count >= 1 THEN '✅ CORRECT! Gap detection working!'
+        ELSE '❌ Gap detection needs work'
+    END as result,
+    period_count as career_periods_found
+FROM validation;
+
+
+-- TEST 10: FIRST_VALUE and LAST_VALUE
+WITH your_solution AS (
+    -- PASTE YOUR EXERCISE 10 SOLUTION HERE
+    SELECT DISTINCT
+        PERSON_CODE,
+        PRIMARY_NAME,
+        NULL::VARCHAR as first_movie,
+        NULL::VARCHAR as last_movie
+    FROM (SELECT 'nm0000093' as PERSON_CODE, 'Test' as PRIMARY_NAME) -- placeholder
+),
+expected AS (
+    WITH actor_timeline AS (
+        SELECT 
+            tp.PERSON_CODE,
+            nb.PRIMARY_NAME,
+            tb.PRIMARY_TITLE,
+            tb.START_YEAR
+        FROM title_principals tp
+        JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+        JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
+        WHERE tp.JOB_CATEGORY IN ('actor', 'actress')
+            AND tb.TITLE_TYPE = 'movie'
+            AND tb.START_YEAR IS NOT NULL
+            AND tp.PERSON_CODE IN ('nm0000093', 'nm0000136', 'nm0000138')
+    )
+    SELECT DISTINCT
+        PERSON_CODE,
+        PRIMARY_NAME,
+        FIRST_VALUE(PRIMARY_TITLE) OVER (
+            PARTITION BY PERSON_CODE 
+            ORDER BY START_YEAR
+            ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+        ) as first_movie,
+        LAST_VALUE(PRIMARY_TITLE) OVER (
+            PARTITION BY PERSON_CODE 
+            ORDER BY START_YEAR
+            ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+        ) as last_movie
+    FROM actor_timeline
+)
+SELECT 
+    CASE 
+        WHEN COUNT(*) = 0 THEN '⚠️ No results - add your solution'
+        WHEN EXISTS (
+            SELECT 1 FROM your_solution y 
+            JOIN expected e ON y.PERSON_CODE = e.PERSON_CODE 
+            WHERE COALESCE(y.first_movie,'') != COALESCE(e.first_movie,'')
+               OR COALESCE(y.last_movie,'') != COALESCE(e.last_movie,'')
+        ) THEN '❌ FIRST/LAST_VALUE incorrect'
+        ELSE '✅ CORRECT! FIRST/LAST_VALUE working!'
+    END as result
+FROM your_solution;
