@@ -416,13 +416,27 @@ FROM your_solution;
 
 -- TEST 8: Multiple Window Functions
 WITH your_solution AS (
-    -- PASTE YOUR EXERCISE 8 SOLUTION HERE
+WITH actor_counts AS (
     SELECT 
-        PRIMARY_NAME,
-        movie_count,
-        NULL::INT as actor_rank,
-        NULL::BIGINT as running_total
-    FROM (SELECT 'test' as PRIMARY_NAME, 1 as movie_count) -- placeholder
+        tp.PERSON_CODE,
+        nb.PRIMARY_NAME,
+        COUNT(DISTINCT tp.TITLE_CODE) as movie_count
+    FROM title_principals tp
+    JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+    JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
+    WHERE tb.TITLE_TYPE = 'movie'
+        AND tp.JOB_CATEGORY IN ('actor', 'actress')
+    GROUP BY tp.PERSON_CODE, nb.PRIMARY_NAME
+    HAVING COUNT(DISTINCT tp.TITLE_CODE) > 50
+)
+SELECT 
+    PRIMARY_NAME,
+    movie_count,
+    DENSE_RANK() OVER (ORDER BY movie_count DESC) AS actor_rank,
+    sum(movie_count) OVER (ORDER BY movie_count DESC, PRIMARY_NAME ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT row) AS running_total
+FROM actor_counts
+ORDER BY movie_count DESC
+LIMIT 20
 ),
 expected AS (
     WITH actor_counts AS (
