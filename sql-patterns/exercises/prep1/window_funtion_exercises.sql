@@ -93,6 +93,23 @@ WHERE TITLE_TYPE = 'movie'
 GROUP BY START_YEAR
 ORDER BY START_YEAR;
 
+--- SOLUTION
+WITH count_by_year as
+(SELECT 
+    START_YEAR,
+    COUNT(*) as movies_this_year--,
+    -- Add running total here
+FROM title_basics
+WHERE TITLE_TYPE = 'movie' 
+    AND START_YEAR BETWEEN 2015 AND 2024
+GROUP BY START_YEAR)
+SELECT start_year, movies_this_year,
+  sum(MOVIES_THIS_YEAR) OVER (ORDER BY start_year) AS running_total
+FROM count_by_year 
+ORDER BY START_YEAR
+;
+
+
 
 -- EXERCISE 5: Moving Average
 -- Calculate 3-year moving average of movies released

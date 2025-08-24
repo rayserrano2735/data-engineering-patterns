@@ -188,37 +188,61 @@ FROM
 
 -- TEST 4: Running Totals
 WITH your_solution AS (
-    -- PASTE YOUR EXERCISE 4 SOLUTION HERE
-    SELECT 
-        START_YEAR,
-        NULL::BIGINT as movies_this_year,  -- Replace with COUNT(*)
-        NULL::BIGINT as running_total      -- Replace with running SUM
-    FROM title_basics
-    WHERE TITLE_TYPE = 'movie' 
-        AND START_YEAR BETWEEN 2015 AND 2024
-    GROUP BY START_YEAR
+WITH count_by_year AS
+(
+SELECT
+	START_YEAR,
+	COUNT(*) AS movies_this_year
+	--,
+	-- Add running total here
+FROM
+	title_basics
+WHERE
+	TITLE_TYPE = 'movie'
+	AND START_YEAR BETWEEN 2015 AND 2024
+GROUP BY
+	START_YEAR)
+SELECT
+	start_year,
+	movies_this_year,
+	sum(MOVIES_THIS_YEAR) OVER (
+	ORDER BY start_year) AS running_total
+FROM
+	count_by_year
+ORDER BY
+	START_YEAR
 ),
 expected AS (
-    SELECT 
-        START_YEAR,
-        COUNT(*) as movies_this_year,
-        SUM(COUNT(*)) OVER (ORDER BY START_YEAR ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as running_total
-    FROM title_basics
-    WHERE TITLE_TYPE = 'movie' 
-        AND START_YEAR BETWEEN 2015 AND 2024
-    GROUP BY START_YEAR
+SELECT
+	START_YEAR,
+	COUNT(*) AS movies_this_year,
+	SUM(COUNT(*)) OVER (
+	ORDER BY START_YEAR ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total
+FROM
+	title_basics
+WHERE
+	TITLE_TYPE = 'movie'
+	AND START_YEAR BETWEEN 2015 AND 2024
+GROUP BY
+	START_YEAR
 )
-SELECT 
-    CASE 
-        WHEN COUNT(*) = 0 THEN '⚠️ No results - add your solution'
-        WHEN EXISTS (
-            SELECT 1 FROM your_solution y 
-            JOIN expected e ON y.START_YEAR = e.START_YEAR 
-            WHERE y.running_total != e.running_total
+SELECT
+	CASE
+		WHEN COUNT(*) = 0 THEN '⚠️ No results - add your solution'
+		WHEN EXISTS (
+		SELECT
+			1
+		FROM
+			your_solution y
+		JOIN expected e ON
+			y.START_YEAR = e.START_YEAR
+		WHERE
+			y.running_total != e.running_total
         ) THEN '❌ Running total calculation incorrect'
-        ELSE '✅ CORRECT! Running totals calculated perfectly!'
-    END as result
-FROM your_solution;
+		ELSE '✅ CORRECT! Running totals calculated perfectly!'
+	END AS RESULT
+FROM
+	your_solution;
 
 
 -- TEST 5: Moving Average
