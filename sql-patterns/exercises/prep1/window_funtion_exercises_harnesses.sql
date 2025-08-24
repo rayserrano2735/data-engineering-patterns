@@ -247,43 +247,70 @@ FROM
 
 -- TEST 5: Moving Average
 WITH your_solution AS (
-    -- PASTE YOUR EXERCISE 5 SOLUTION HERE (with moving average)
-    SELECT 
-        START_YEAR,
-        NULL::INT as movie_count,
-        NULL::NUMERIC as moving_avg_3yr
-    FROM (SELECT 1 as START_YEAR) -- placeholder
+WITH yearly_counts AS (
+SELECT
+	START_YEAR,
+	COUNT(*) AS movie_count
+FROM
+	title_basics
+WHERE
+	TITLE_TYPE = 'movie'
+	AND START_YEAR BETWEEN 2010 AND 2024
+GROUP BY
+	START_YEAR
+)
+SELECT
+	START_YEAR,
+	movie_count,
+	avg(MOVIE_COUNT) OVER (
+ORDER BY
+	start_year ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS moving_avg_3yr
+FROM
+	yearly_counts
+ORDER BY
+	START_YEAR
 ),
 expected AS (
     WITH yearly_counts AS (
-        SELECT 
-            START_YEAR,
-            COUNT(*) as movie_count
-        FROM title_basics
-        WHERE TITLE_TYPE = 'movie'
-            AND START_YEAR BETWEEN 2010 AND 2024
-        GROUP BY START_YEAR
+SELECT
+	START_YEAR,
+	COUNT(*) AS movie_count
+FROM
+	title_basics
+WHERE
+	TITLE_TYPE = 'movie'
+	AND START_YEAR BETWEEN 2010 AND 2024
+GROUP BY
+	START_YEAR
     )
-    SELECT 
-        START_YEAR,
-        movie_count,
-        AVG(movie_count) OVER (
-            ORDER BY START_YEAR 
+SELECT
+	START_YEAR,
+	movie_count,
+	AVG(movie_count) OVER (
+ORDER BY
+	START_YEAR 
             ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
-        ) as moving_avg_3yr
-    FROM yearly_counts
+        ) AS moving_avg_3yr
+FROM
+	yearly_counts
 )
-SELECT 
-    CASE 
-        WHEN COUNT(*) <= 1 THEN '⚠️ No results - add your solution'
-        WHEN EXISTS (
-            SELECT 1 FROM your_solution y 
-            JOIN expected e ON y.START_YEAR = e.START_YEAR 
-            WHERE ABS(y.moving_avg_3yr - e.moving_avg_3yr) > 0.01
+SELECT
+	CASE
+		WHEN COUNT(*) <= 1 THEN '⚠️ No results - add your solution'
+		WHEN EXISTS (
+		SELECT
+			1
+		FROM
+			your_solution y
+		JOIN expected e ON
+			y.START_YEAR = e.START_YEAR
+		WHERE
+			ABS(y.moving_avg_3yr - e.moving_avg_3yr) > 0.01
         ) THEN '❌ Moving average calculation incorrect'
-        ELSE '✅ CORRECT! 3-year moving average perfect!'
-    END as result
-FROM your_solution;
+		ELSE '✅ CORRECT! 3-year moving average perfect!'
+	END AS RESULT
+FROM
+	your_solution;
 
 
 -- TEST 6: LAG and LEAD

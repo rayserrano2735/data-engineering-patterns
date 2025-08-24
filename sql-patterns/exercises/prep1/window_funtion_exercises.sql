@@ -114,21 +114,29 @@ ORDER BY START_YEAR
 -- EXERCISE 5: Moving Average
 -- Calculate 3-year moving average of movies released
 -- TODO: For each year, show average of (previous year, current year, next year)
+--- SOLUTION
 WITH yearly_counts AS (
-    SELECT 
-        START_YEAR,
-        COUNT(*) as movie_count
-    FROM title_basics
-    WHERE TITLE_TYPE = 'movie'
-        AND START_YEAR BETWEEN 2010 AND 2024
-    GROUP BY START_YEAR
+SELECT
+	START_YEAR,
+	COUNT(*) AS movie_count
+FROM
+	title_basics
+WHERE
+	TITLE_TYPE = 'movie'
+	AND START_YEAR BETWEEN 2010 AND 2024
+GROUP BY
+	START_YEAR
 )
-SELECT 
-    START_YEAR,
-    movie_count,
-    -- Add moving average here
-FROM yearly_counts
-ORDER BY START_YEAR;
+SELECT
+	START_YEAR,
+	movie_count,
+	avg(MOVIE_COUNT) OVER (
+	ORDER BY start_year ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS moving_avg_3yr
+FROM
+	yearly_counts
+ORDER BY
+	START_YEAR
+;
 
 
 -- EXERCISE 6: LAG and LEAD
