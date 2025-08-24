@@ -164,6 +164,32 @@ SELECT
 FROM actor_movies
 ORDER BY START_YEAR, ORDERING;
 
+--- SOLUTION
+WITH actor_movies AS (
+    SELECT 
+        nb.PRIMARY_NAME,
+        tb.PRIMARY_TITLE,
+        tb.START_YEAR,
+        tp.ORDERING
+    FROM title_principals tp
+    JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+    JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
+    WHERE tp.PERSON_CODE = 'nm0000093'
+        AND tb.TITLE_TYPE = 'movie'
+        AND tb.START_YEAR IS NOT NULL
+        AND tp.JOB_CATEGORY = 'actor'
+        AND tp.ORDERING=1
+)
+SELECT 
+    PRIMARY_NAME,
+    PRIMARY_TITLE,
+    START_YEAR,
+    LAG(primary_title) OVER (ORDER BY start_year, primary_title) previous_movie,
+    LEAD(primary_title) OVER (ORDER BY start_year, primary_title) next_movie
+FROM actor_movies
+ORDER BY START_YEAR, primary_title
+;
+
 
 -- EXERCISE 7: PERCENT_RANK()
 -- Find percentile ranking of movie runtimes

@@ -315,36 +315,54 @@ FROM
 
 -- TEST 6: LAG and LEAD
 WITH your_solution AS (
-    -- PASTE YOUR EXERCISE 6 SOLUTION HERE
+WITH actor_movies AS (
     SELECT 
-        PRIMARY_NAME,
-        PRIMARY_TITLE,
-        START_YEAR,
-        NULL::VARCHAR as previous_movie,
-        NULL::VARCHAR as next_movie
-    FROM (SELECT 1) -- placeholder
+        nb.PRIMARY_NAME,
+        tb.PRIMARY_TITLE,
+        tb.START_YEAR,
+        tp.ORDERING
+    FROM title_principals tp
+    JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+    JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
+    WHERE tp.PERSON_CODE = 'nm0000093'
+        AND tb.TITLE_TYPE = 'movie'
+        AND tb.START_YEAR IS NOT NULL
+        AND tp.JOB_CATEGORY = 'actor'
+        AND tp.ORDERING=1
+)
+SELECT 
+    PRIMARY_NAME,
+    PRIMARY_TITLE,
+    START_YEAR,
+    LAG(primary_title) OVER (ORDER BY start_year, primary_title) previous_movie,
+    LEAD(primary_title) OVER (ORDER BY start_year, primary_title) next_movie
+FROM actor_movies
+ORDER BY START_YEAR, primary_title
 ),
 expected AS (
     WITH actor_movies AS (
         SELECT 
             nb.PRIMARY_NAME,
             tb.PRIMARY_TITLE,
-            tb.START_YEAR,
-            tp.ORDERING
+            tb.START_YEAR
         FROM title_principals tp
         JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
         JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
         WHERE tp.PERSON_CODE = 'nm0000093'
             AND tb.TITLE_TYPE = 'movie'
             AND tb.START_YEAR IS NOT NULL
+            AND tp.JOB_CATEGORY = 'actor'
+            AND tp.ORDERING = 1  -- Primary role only
+        ORDER BY tb.START_YEAR
     )
     SELECT 
         PRIMARY_NAME,
         PRIMARY_TITLE,
         START_YEAR,
-        LAG(PRIMARY_TITLE) OVER (ORDER BY START_YEAR, ORDERING) as previous_movie,
-        LEAD(PRIMARY_TITLE) OVER (ORDER BY START_YEAR, ORDERING) as next_movie
+        LAG(PRIMARY_TITLE) OVER (ORDER BY START_YEAR, PRIMARY_TITLE) as previous_movie,
+        LEAD(PRIMARY_TITLE) OVER (ORDER BY START_YEAR, PRIMARY_TITLE) as next_movie
     FROM actor_movies
+    ORDER BY START_YEAR, PRIMARY_TITLE
 )
 SELECT 
     CASE 
