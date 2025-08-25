@@ -478,29 +478,76 @@ FROM your_solution;
 
 -- TEST 9: Gap and Island (Complex - simplifying for exercise)
 WITH your_solution AS (
-    -- PASTE YOUR EXERCISE 9 SOLUTION HERE
+WITH actor_years AS (
+    SELECT DISTINCT
+        tp.PERSON_CODE,
+        tb.START_YEAR
+    FROM title_principals tp
+    JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+    WHERE tp.PERSON_CODE = 'nm0000093'  -- Brad Pitt
+        AND tb.START_YEAR IS NOT NULL
+        AND tb.TITLE_TYPE = 'movie'
+),
+years_with_gaps AS (
     SELECT 
         PERSON_CODE,
-        NULL::INT as career_period_start,
-        NULL::INT as career_period_end,
-        NULL::INT as years_active
-    FROM (SELECT 'nm0000093' as PERSON_CODE) -- placeholder
+        START_YEAR,
+        start_year - ROW_NUMBER() OVER (ORDER BY START_YEAR) AS group_id
+    FROM actor_years
+)
+SELECT 
+    PERSON_CODE, group_id,
+    MIN(START_YEAR) as career_period_start,
+    MAX(START_YEAR) as career_period_end,
+    COUNT(*) as years_active
+FROM years_with_gaps
+GROUP BY person_code, group_id
+ORDER BY career_period_start
+),
+expected AS (
+    WITH actor_years AS (
+        SELECT DISTINCT
+            tp.PERSON_CODE,
+            tb.START_YEAR
+        FROM title_principals tp
+        JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+        WHERE tp.PERSON_CODE = 'nm0000093'
+            AND tb.START_YEAR IS NOT NULL
+            AND tb.TITLE_TYPE = 'movie'
+    ),
+    years_with_gaps AS (
+        SELECT 
+            PERSON_CODE,
+            START_YEAR,
+            START_YEAR - ROW_NUMBER() OVER (ORDER BY START_YEAR) as group_id
+        FROM actor_years
+    )
+    SELECT 
+        PERSON_CODE,
+        MIN(START_YEAR) as career_period_start,
+        MAX(START_YEAR) as career_period_end,
+        COUNT(*) as years_active
+    FROM years_with_gaps
+    GROUP BY PERSON_CODE, group_id
 ),
 validation AS (
-    -- Simplified test - just check if you found some career periods
-    SELECT COUNT(DISTINCT career_period_start) as period_count
-    FROM your_solution
-    WHERE PERSON_CODE = 'nm0000093'
+    SELECT 
+        (SELECT COUNT(*) FROM your_solution) as your_periods,
+        (SELECT COUNT(*) FROM expected) as expected_periods,
+        (SELECT COUNT(*) FROM your_solution y 
+         JOIN expected e ON y.career_period_start = e.career_period_start 
+         AND y.career_period_end = e.career_period_end) as matching_periods
 )
 SELECT 
     CASE 
-        WHEN period_count = 0 THEN '⚠️ No results - add your solution'
-        WHEN period_count >= 1 THEN '✅ CORRECT! Gap detection working!'
-        ELSE '❌ Gap detection needs work'
+        WHEN your_periods = 0 THEN '⚠️ No results - add your solution'
+        WHEN your_periods != expected_periods THEN '❌ Found ' || your_periods || ' periods, expected ' || expected_periods
+        WHEN matching_periods != expected_periods THEN '❌ Period dates incorrect'
+        ELSE '✅ CORRECT! All career periods found!'
     END as result,
-    period_count as career_periods_found
+    your_periods as periods_found,
+    expected_periods as periods_expected
 FROM validation;
-
 
 -- TEST 10: FIRST_VALUE and LAST_VALUE
 WITH your_solution AS (

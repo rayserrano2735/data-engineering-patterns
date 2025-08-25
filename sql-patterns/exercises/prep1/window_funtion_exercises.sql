@@ -271,23 +271,59 @@ LIMIT 20
 WITH actor_years AS (
     SELECT DISTINCT
         tp.PERSON_CODE,
-        tb.START_YEAR,
-        -- Add ROW_NUMBER to find gaps
+        tb.START_YEAR
     FROM title_principals tp
     JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
     WHERE tp.PERSON_CODE = 'nm0000093'  -- Brad Pitt
         AND tb.START_YEAR IS NOT NULL
         AND tb.TITLE_TYPE = 'movie'
+),
+years_with_gaps AS (
+    SELECT 
+        PERSON_CODE,
+        START_YEAR,
+        -- TODO: Add calculation to detect gaps
+    FROM actor_years
 )
 SELECT 
     PERSON_CODE,
     MIN(START_YEAR) as career_period_start,
     MAX(START_YEAR) as career_period_end,
     COUNT(*) as years_active
-FROM actor_years
--- Add GROUP BY with gap detection
+FROM years_with_gaps
+-- TODO: Add proper GROUP BY
 ORDER BY career_period_start;
 
+--- SOLUTION
+-- EXERCISE 9: Gap and Island Problem
+-- Find consecutive years where an actor was active
+-- TODO: Identify "career breaks" for a specific actor
+WITH actor_years AS (
+    SELECT DISTINCT
+        tp.PERSON_CODE,
+        tb.START_YEAR
+    FROM title_principals tp
+    JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+    WHERE tp.PERSON_CODE = 'nm0000093'  -- Brad Pitt
+        AND tb.START_YEAR IS NOT NULL
+        AND tb.TITLE_TYPE = 'movie'
+),
+years_with_gaps AS (
+    SELECT 
+        PERSON_CODE,
+        START_YEAR,
+        start_year - ROW_NUMBER() OVER (ORDER BY START_YEAR) AS group_id
+    FROM actor_years
+)
+SELECT 
+    PERSON_CODE, group_id,
+    MIN(START_YEAR) as career_period_start,
+    MAX(START_YEAR) as career_period_end,
+    COUNT(*) as years_active
+FROM years_with_gaps
+GROUP BY person_code, group_id
+ORDER BY career_period_start
+;
 
 -- EXERCISE 10: FIRST_VALUE and LAST_VALUE
 -- Show each actor's first and most recent movie
