@@ -1,0 +1,177 @@
+-- =====================================================
+-- PIVOT EXAMPLES - Transform Rows to Columns
+-- =====================================================
+
+-- Sample Data Structure:
+-- sales_data table:
+-- | product_id | quarter | revenue |
+-- |------------|---------|---------|
+-- | A          | Q1      | 1000    |
+-- | A          | Q2      | 1500    |
+-- | B          | Q1      | 2000    |
+
+-- -----------------------------------------------------
+-- SNOWFLAKE PIVOT
+-- -----------------------------------------------------
+
+-- Basic PIVOT - Known columns
+SELECT * FROM sales_data
+PIVOT (
+    SUM(revenue)
+    FOR quarter IN ('Q1', 'Q2', 'Q3', 'Q4')
+) AS p
+ORDER BY product_id;
+
+-- PIVOT with multiple aggregates
+SELECT * FROM sales_data
+PIVOT (
+    SUM(revenue) AS total,
+    AVG(revenue) AS average
+    FOR quarter IN ('Q1', 'Q2')
+) AS p;
+
+-- Dynamic PIVOT (requires stored procedure in Snowflake)
+-- First, get unique values:
+SELECT LISTAGG(DISTINCT '"' || quarter || '"', ',') 
+FROM sales_data;
+-- Then use result in PIVOT query
+
+-- -----------------------------------------------------
+-- POSTGRESQL PIVOT (using CASE statements)
+-- -----------------------------------------------------
+
+-- PostgreSQL doesn't have PIVOT, use CASE/crosstab
+SELECT 
+    product_id,
+    SUM(CASE WHEN quarter = 'Q1' THEN revenue END) AS Q1,
+    SUM(CASE WHEN quarter = 'Q2' THEN revenue END) AS Q2,
+    SUM(CASE WHEN quarter = 'Q3' THEN revenue END) AS Q3,
+    SUM(CASE WHEN quarter = 'Q4' THEN revenue END) AS Q4
+FROM sales_data
+GROUP BY product_id
+ORDER BY product_id;
+
+-- Using crosstab function (requires tablefunc extension)
+CREATE EXTENSION IF NOT EXISTS tablefunc;
+
+SELECT * FROM crosstab(
+    'SELECT product_id, quarter, revenue 
+     FROM sales_data 
+     ORDER BY 1,2',
+    'SELECT DISTINCT quarter FROM sales_data ORDER BY 1'
+) AS ct(product_id TEXT, Q1 NUMERIC, Q2 NUMERIC, Q3 NUMERIC, Q4 NUMERIC);
+
+-- =====================================================
+-- UNPIVOT EXAMPLES - Transform Columns to Rows
+-- =====================================================
+
+-- Sample Data Structure:
+-- quarterly_sales table:
+-- | product_id | Q1   | Q2   | Q3   | Q4   |
+-- |------------|------|------|------|------|
+-- | A          | 1000 | 1500 | 1200 | 1800 |
+-- | B          | 2000 | 2200 | 2100 | 2500 |
+
+-- -----------------------------------------------------
+-- SNOWFLAKE UNPIVOT
+-- -----------------------------------------------------
+
+-- Basic UNPIVOT
+SELECT product_id, quarter, revenue
+FROM quarterly_sales
+UNPIVOT (
+    revenue FOR quarter IN (Q1, Q2, Q3, Q4)
+) AS u
+ORDER BY product_id, quarter;
+
+-- UNPIVOT with multiple columns
+SELECT * FROM quarterly_sales
+UNPIVOT (
+    (revenue, units) FOR quarter IN (
+        (Q1_revenue, Q1_units) AS 'Q1',
+        (Q2_revenue, Q2_units) AS 'Q2'
+    )
+) AS u;
+
+-- -----------------------------------------------------
+-- POSTGRESQL UNPIVOT (using UNION ALL or LATERAL)
+-- -----------------------------------------------------
+
+-- Method 1: UNION ALL
+SELECT product_id, 'Q1' AS quarter, Q1 AS revenue FROM quarterly_sales
+UNION ALL
+SELECT product_id, 'Q2' AS quarter, Q2 AS revenue FROM quarterly_sales
+UNION ALL
+SELECT product_id, 'Q3' AS quarter, Q3 AS revenue FROM quarterly_sales
+UNION ALL
+SELECT product_id, 'Q4' AS quarter, Q4 AS revenue FROM quarterly_sales
+ORDER BY product_id, quarter;
+
+-- Method 2: LATERAL (more efficient)
+SELECT product_id, quarter, revenue
+FROM quarterly_sales,
+LATERAL (
+    VALUES 
+        ('Q1', Q1),
+        ('Q2', Q2),
+        ('Q3', Q3),
+        ('Q4', Q4)
+) AS u(quarter, revenue)
+ORDER BY product_id, quarter;
+
+-- Method 3: Using unnest (for arrays)
+SELECT product_id, 
+       unnest(ARRAY['Q1', 'Q2', 'Q3', 'Q4']) AS quarter,
+       unnest(ARRAY[Q1, Q2, Q3, Q4]) AS revenue
+FROM quarterly_sales
+ORDER BY product_id, quarter;
+
+-- =====================================================
+-- COMMON INTERVIEW PATTERNS
+-- =====================================================
+
+-- 1. PIVOT with filtering
+SELECT * FROM (
+    SELECT product_id, quarter, revenue 
+    FROM sales_data 
+    WHERE year = 2024
+)
+PIVOT (
+    SUM(revenue)
+    FOR quarter IN ('Q1', 'Q2', 'Q3', 'Q4')
+) AS p;
+
+-- 2. PIVOT with NULL handling
+SELECT 
+    product_id,
+    COALESCE(SUM(CASE WHEN quarter = 'Q1' THEN revenue END), 0) AS Q1,
+    COALESCE(SUM(CASE WHEN quarter = 'Q2' THEN revenue END), 0) AS Q2
+FROM sales_data
+GROUP BY product_id;
+
+-- 3. Multiple aggregations in PostgreSQL
+SELECT 
+    product_id,
+    SUM(CASE WHEN quarter = 'Q1' THEN revenue END) AS Q1_revenue,
+    COUNT(CASE WHEN quarter = 'Q1' THEN 1 END) AS Q1_transactions,
+    AVG(CASE WHEN quarter = 'Q1' THEN revenue END) AS Q1_avg
+FROM sales_data
+GROUP BY product_id;
+
+-- =====================================================
+-- KEY DIFFERENCES TO REMEMBER
+-- =====================================================
+
+/*
+SNOWFLAKE:
+- Has native PIVOT/UNPIVOT syntax
+- Cleaner, more readable for simple cases
+- Dynamic columns require procedural code
+
+POSTGRESQL:
+- No native PIVOT/UNPIVOT
+- CASE statements for PIVOT
+- LATERAL/UNION ALL for UNPIVOT
+- crosstab function available with extension
+- More flexible for complex transformations
+*/
