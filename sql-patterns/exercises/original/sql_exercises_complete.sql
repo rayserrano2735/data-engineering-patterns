@@ -396,15 +396,13 @@ FROM ranked_runtimes
 WHERE runtime_rank = 2
 ORDER BY GENRES;
 
-
 -- EXERCISE 13: Median Calculation
 -- Calculate median movie runtime per year
 -- TODO: Use PERCENTILE_CONT(0.5) WITHIN GROUP
 SELECT 
     START_YEAR,
-    COUNT(*) as movie_count,
-    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY RUNTIME_MINUTES) as median_runtime,
-    AVG(RUNTIME_MINUTES) as mean_runtime
+    -- Add PERCENTILE_CONT for median here
+    -- Also calculate COUNT and AVG for comparison
 FROM title_basics
 WHERE TITLE_TYPE = 'movie'
     AND RUNTIME_MINUTES IS NOT NULL
@@ -434,11 +432,8 @@ SELECT
     PRIMARY_NAME,
     START_YEAR,
     movies_this_year,
-    SUM(movies_this_year) OVER (
-        PARTITION BY PRIMARY_NAME 
-        ORDER BY START_YEAR 
-        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
-    ) as rolling_3year_total
+    -- Add SUM window for 3-year rolling total
+    -- Hint: ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
 FROM actor_yearly
 ORDER BY START_YEAR;
 
@@ -459,23 +454,16 @@ WITH collaborations AS (
         AND tp2.JOB_CATEGORY IN ('actor', 'actress')
     GROUP BY tp1.PERSON_CODE, tp2.PERSON_CODE
     HAVING COUNT(DISTINCT tp1.TITLE_CODE) > 5
-),
-ranked_collaborations AS (
-    SELECT 
-        actor1,
-        actor2,
-        movies_together,
-        RANK() OVER (ORDER BY movies_together DESC) as collaboration_rank
-    FROM collaborations
 )
 SELECT 
     actor1,
     actor2,
     movies_together,
-    collaboration_rank
-FROM ranked_collaborations
-WHERE collaboration_rank <= 10
-ORDER BY movies_together DESC;
+    -- Add RANK() to find top collaborations
+FROM collaborations
+WHERE -- Your filter for top ranked
+ORDER BY movies_together DESC
+LIMIT 10;
 
 
 -- =====================================================
