@@ -464,6 +464,29 @@ SELECT
 FROM actor_yearly
 ORDER BY START_YEAR;
 
+--- SOLUTION
+WITH actor_yearly AS (
+    SELECT 
+        tp.PERSON_CODE,
+        nb.PRIMARY_NAME,
+        tb.START_YEAR,
+        COUNT(*) as movies_this_year
+    FROM title_principals tp
+    JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+    JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
+    WHERE tp.PERSON_CODE = 'nm0000093'
+        AND tb.TITLE_TYPE = 'movie'
+        AND tb.START_YEAR IS NOT NULL
+    GROUP BY tp.PERSON_CODE, nb.PRIMARY_NAME, tb.START_YEAR
+)
+SELECT 
+    PRIMARY_NAME,
+    START_YEAR,
+    movies_this_year,
+	SUM(MOVIES_THIS_YEAR ) OVER (ORDER BY START_YEAR ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS rolling_3year_total
+FROM actor_yearly
+ORDER BY START_YEAR;
+
 
 -- EXERCISE 15: Self-Join with Window Functions
 -- Find actors who worked together most frequently

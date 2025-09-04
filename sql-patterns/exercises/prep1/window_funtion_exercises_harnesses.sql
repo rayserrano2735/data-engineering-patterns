@@ -736,13 +736,27 @@ FROM your_solution;
 
 -- TEST 14: Date-Based Rolling Windows
 WITH your_solution AS (
-    -- PASTE YOUR EXERCISE 14 SOLUTION HERE
+WITH actor_yearly AS (
     SELECT 
-        'PRIMARY_NAME' as PRIMARY_NAME,
-        2020 as START_YEAR,
-        NULL::INT as movies_this_year,
-        NULL::INT as rolling_3year_total
-    FROM (SELECT 1) -- placeholder
+        tp.PERSON_CODE,
+        nb.PRIMARY_NAME,
+        tb.START_YEAR,
+        COUNT(*) as movies_this_year
+    FROM title_principals tp
+    JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+    JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
+    WHERE tp.PERSON_CODE = 'nm0000093'
+        AND tb.TITLE_TYPE = 'movie'
+        AND tb.START_YEAR IS NOT NULL
+    GROUP BY tp.PERSON_CODE, nb.PRIMARY_NAME, tb.START_YEAR
+)
+SELECT 
+    PRIMARY_NAME,
+    START_YEAR,
+    movies_this_year,
+	SUM(MOVIES_THIS_YEAR ) OVER (ORDER BY START_YEAR ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS rolling_3year_total
+FROM actor_yearly
+ORDER BY START_YEAR
 ),
 expected AS (
     WITH actor_yearly AS (
