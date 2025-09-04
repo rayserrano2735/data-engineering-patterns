@@ -417,9 +417,8 @@ ORDER BY GENRES;
 -- TODO: Use PERCENTILE_CONT(0.5) WITHIN GROUP
 SELECT 
     START_YEAR,
-    COUNT(*) as movie_count,
-    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY RUNTIME_MINUTES) as median_runtime,
-    AVG(RUNTIME_MINUTES) as mean_runtime
+    -- Add PERCENTILE_CONT for median here
+    -- Also calculate COUNT and AVG for comparison
 FROM title_basics
 WHERE TITLE_TYPE = 'movie'
     AND RUNTIME_MINUTES IS NOT NULL
@@ -449,11 +448,61 @@ SELECT
     PRIMARY_NAME,
     START_YEAR,
     movies_this_year,
-    SUM(movies_this_year) OVER (
-        PARTITION BY PRIMARY_NAME 
-        ORDER BY START_YEAR 
-        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
-    ) as rolling_3year_total
+    -- Add SUM window for 3-year rolling total
+    -- Hint: ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+FROM actor_yearly
+ORDER BY START_YEAR;
+
+
+-- EXERCISE 15: Self-Join with Window Functions
+-- Find actors who worked together most frequently
+-- TODO: Combine self-join with RANK() to find top collaborations
+WITH collaborations AS (
+    SELECT 
+        tp1.PERSON_CODE as actor1,
+        tp2.PERSON_CODE as actor2,
+        COUNT(DISTINCT tp1.TITLE_CODE) as movies_together
+    FROM title_principals tp1
+    JOIN title_principals tp2 
+        ON tp1.TITLE_CODE = tp2.TITLE_CODE 
+        AND tp1.PERSON_CODE < tp2.PERSON_CODE-- EXERCISE 13: Median Calculation
+-- Calculate median movie runtime per year
+-- TODO: Use PERCENTILE_CONT(0.5) WITHIN GROUP
+SELECT 
+    START_YEAR,
+    -- Add PERCENTILE_CONT for median here
+    -- Also calculate COUNT and AVG for comparison
+FROM title_basics
+WHERE TITLE_TYPE = 'movie'
+    AND RUNTIME_MINUTES IS NOT NULL
+    AND START_YEAR BETWEEN 2020 AND 2024
+GROUP BY START_YEAR
+ORDER BY START_YEAR;
+
+
+-- EXERCISE 14: Date-Based Windows
+-- Show rolling 3-year count of movies for each actor
+-- TODO: Count movies in current year and 2 years before
+WITH actor_yearly AS (
+    SELECT 
+        tp.PERSON_CODE,
+        nb.PRIMARY_NAME,
+        tb.START_YEAR,
+        COUNT(*) as movies_this_year
+    FROM title_principals tp
+    JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+    JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
+    WHERE tp.PERSON_CODE = 'nm0000093'
+        AND tb.TITLE_TYPE = 'movie'
+        AND tb.START_YEAR IS NOT NULL
+    GROUP BY tp.PERSON_CODE, nb.PRIMARY_NAME, tb.START_YEAR
+)
+SELECT 
+    PRIMARY_NAME,
+    START_YEAR,
+    movies_this_year,
+    -- Add SUM window for 3-year rolling total
+    -- Hint: ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
 FROM actor_yearly
 ORDER BY START_YEAR;
 
@@ -474,23 +523,30 @@ WITH collaborations AS (
         AND tp2.JOB_CATEGORY IN ('actor', 'actress')
     GROUP BY tp1.PERSON_CODE, tp2.PERSON_CODE
     HAVING COUNT(DISTINCT tp1.TITLE_CODE) > 5
-),
-ranked_collaborations AS (
-    SELECT 
-        actor1,
-        actor2,
-        movies_together,
-        RANK() OVER (ORDER BY movies_together DESC) as collaboration_rank
-    FROM collaborations
 )
 SELECT 
     actor1,
     actor2,
     movies_together,
-    collaboration_rank
-FROM ranked_collaborations
-WHERE collaboration_rank <= 10
-ORDER BY movies_together DESC;
+    -- Add RANK() to find top collaborations
+FROM collaborations
+WHERE -- Your filter for top ranked
+ORDER BY movies_together DESC
+LIMIT 10;
+    WHERE tp1.JOB_CATEGORY IN ('actor', 'actress')
+        AND tp2.JOB_CATEGORY IN ('actor', 'actress')
+    GROUP BY tp1.PERSON_CODE, tp2.PERSON_CODE
+    HAVING COUNT(DISTINCT tp1.TITLE_CODE) > 5
+)
+SELECT 
+    actor1,
+    actor2,
+    movies_together,
+    -- Add RANK() to find top collaborations
+FROM collaborations
+WHERE -- Your filter for top ranked
+ORDER BY movies_together DESC
+LIMIT 10;
 
 
 

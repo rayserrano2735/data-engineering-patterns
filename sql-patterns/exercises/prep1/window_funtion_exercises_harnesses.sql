@@ -701,16 +701,11 @@ FROM your_solution;
 
 -- TEST 13: Median Calculation
 WITH your_solution AS (
+    -- PASTE YOUR EXERCISE 13 SOLUTION HERE
     SELECT 
         START_YEAR,
-        COUNT(*) as movie_count,
-        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY RUNTIME_MINUTES) as median_runtime,
-        AVG(RUNTIME_MINUTES) as mean_runtime
-    FROM title_basics
-    WHERE TITLE_TYPE = 'movie'
-        AND RUNTIME_MINUTES IS NOT NULL
-        AND START_YEAR BETWEEN 2020 AND 2024
-    GROUP BY START_YEAR
+        NULL::NUMERIC as median_runtime
+    FROM (SELECT 2020 as START_YEAR) -- placeholder
 ),
 expected AS (
     SELECT 
@@ -737,30 +732,13 @@ FROM your_solution;
 
 -- TEST 14: Date-Based Rolling Windows
 WITH your_solution AS (
-    WITH actor_yearly AS (
-        SELECT 
-            tp.PERSON_CODE,
-            nb.PRIMARY_NAME,
-            tb.START_YEAR,
-            COUNT(*) as movies_this_year
-        FROM title_principals tp
-        JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
-        JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
-        WHERE tp.PERSON_CODE = 'nm0000093'
-            AND tb.TITLE_TYPE = 'movie'
-            AND tb.START_YEAR IS NOT NULL
-        GROUP BY tp.PERSON_CODE, nb.PRIMARY_NAME, tb.START_YEAR
-    )
+    -- PASTE YOUR EXERCISE 14 SOLUTION HERE
     SELECT 
-        PRIMARY_NAME,
-        START_YEAR,
-        movies_this_year,
-        SUM(movies_this_year) OVER (
-            PARTITION BY PRIMARY_NAME 
-            ORDER BY START_YEAR 
-            ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
-        ) as rolling_3year_total
-    FROM actor_yearly
+        'PRIMARY_NAME' as PRIMARY_NAME,
+        2020 as START_YEAR,
+        NULL::INT as movies_this_year,
+        NULL::INT as rolling_3year_total
+    FROM (SELECT 1) -- placeholder
 ),
 expected AS (
     WITH actor_yearly AS (
@@ -802,35 +780,13 @@ FROM your_solution;
 
 -- TEST 15: Self-Join with Window Functions
 WITH your_solution AS (
-    WITH collaborations AS (
-        SELECT 
-            tp1.PERSON_CODE as actor1,
-            tp2.PERSON_CODE as actor2,
-            COUNT(DISTINCT tp1.TITLE_CODE) as movies_together
-        FROM title_principals tp1
-        JOIN title_principals tp2 
-            ON tp1.TITLE_CODE = tp2.TITLE_CODE 
-            AND tp1.PERSON_CODE < tp2.PERSON_CODE
-        WHERE tp1.JOB_CATEGORY IN ('actor', 'actress')
-            AND tp2.JOB_CATEGORY IN ('actor', 'actress')
-        GROUP BY tp1.PERSON_CODE, tp2.PERSON_CODE
-        HAVING COUNT(DISTINCT tp1.TITLE_CODE) > 5
-    ),
-    ranked_collaborations AS (
-        SELECT 
-            actor1,
-            actor2,
-            movies_together,
-            RANK() OVER (ORDER BY movies_together DESC) as collaboration_rank
-        FROM collaborations
-    )
+    -- PASTE YOUR EXERCISE 15 SOLUTION HERE (final result only)
     SELECT 
-        actor1,
-        actor2,
-        movies_together,
-        collaboration_rank
-    FROM ranked_collaborations
-    WHERE collaboration_rank <= 10
+        'actor1' as actor1,
+        'actor2' as actor2,
+        1 as movies_together,
+        NULL::INT as collaboration_rank
+    FROM (SELECT 1) -- placeholder
 ),
 validation AS (
     SELECT COUNT(*) as result_count
