@@ -701,11 +701,15 @@ FROM your_solution;
 
 -- TEST 13: Median Calculation
 WITH your_solution AS (
-    -- PASTE YOUR EXERCISE 13 SOLUTION HERE
-    SELECT 
-        START_YEAR,
-        NULL::NUMERIC as median_runtime
-    FROM (SELECT 2020 as START_YEAR) -- placeholder
+SELECT 
+    START_YEAR,
+    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY RUNTIME_MINUTES ) AS median_runtime
+FROM title_basics
+WHERE TITLE_TYPE = 'movie'
+    AND RUNTIME_MINUTES IS NOT NULL
+    AND START_YEAR BETWEEN 2020 AND 2024
+GROUP BY START_YEAR
+ORDER BY START_YEAR
 ),
 expected AS (
     SELECT 
