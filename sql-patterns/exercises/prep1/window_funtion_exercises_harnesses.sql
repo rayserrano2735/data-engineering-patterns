@@ -551,13 +551,30 @@ FROM validation;
 
 -- TEST 10: FIRST_VALUE and LAST_VALUE
 WITH your_solution AS (
-    -- PASTE YOUR EXERCISE 10 SOLUTION HERE
-    SELECT DISTINCT
-        PERSON_CODE,
-        PRIMARY_NAME,
-        NULL::VARCHAR as first_movie,
-        NULL::VARCHAR as last_movie
-    FROM (SELECT 'nm0000093' as PERSON_CODE, 'Test' as PRIMARY_NAME) -- placeholder
+WITH actor_timeline AS (
+    SELECT 
+        tp.PERSON_CODE,
+        nb.PRIMARY_NAME,
+        tb.PRIMARY_TITLE,
+        tb.START_YEAR
+    FROM title_principals tp
+    JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+    JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
+    WHERE tp.JOB_CATEGORY IN ('actor', 'actress')
+        AND tb.TITLE_TYPE = 'movie'
+        AND tb.START_YEAR IS NOT NULL
+        AND tp.PERSON_CODE IN ('nm0000093', 'nm0000136', 'nm0000138')  -- Sample actors
+)
+SELECT DISTINCT
+    PERSON_CODE,
+    PRIMARY_NAME,
+    -- Add FIRST_VALUE for earliest movie
+    FIRST_VALUE(primary_title) OVER (PARTITION BY person_code ORDER BY start_year) AS first_movie,
+    -- Add LAST_VALUE for latest movie (remember frame clause!)
+    LAST_VALUE(primary_title) OVER (PARTITION BY person_code ORDER BY start_year
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_movie
+FROM actor_timeline
+ORDER BY PRIMARY_NAME
 ),
 expected AS (
     WITH actor_timeline AS (
