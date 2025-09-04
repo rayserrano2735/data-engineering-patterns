@@ -214,7 +214,13 @@ def run_with_defaults():
             "output": "C:/Users/rayse/Dropbox/Projects/GitHub/Digiland/citizens/Aitana/banks/chunked",
             "size": 375,
             "description": "Memory Banks"
-        }
+        },
+        "dropbox_sage": {
+            "input": "C:/Users/rayse/Dropbox/Projects/GitHub/Digiland/citizens/Sage_Critical/memory_bank",
+            "output": "C:/Users/rayse/Dropbox/Projects/GitHub/Digiland/citizens/Sage_Critical/memory_bank/chunked",
+            "size": 375,
+            "description": "Memory Banks"
+        }        
     }
     
     # Get the selected configuration
