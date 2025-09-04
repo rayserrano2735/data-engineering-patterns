@@ -618,3 +618,229 @@ SELECT
         ELSE '✅ CORRECT! FIRST/LAST_VALUE working!'
     END as result
 FROM your_solution;
+
+-- TEST 11: NTILE Quartiles
+WITH your_solution AS (
+    SELECT 
+        PRIMARY_TITLE,
+        RUNTIME_MINUTES,
+        NTILE(4) OVER (ORDER BY RUNTIME_MINUTES) as quartile
+    FROM title_basics
+    WHERE TITLE_TYPE = 'movie'
+        AND RUNTIME_MINUTES IS NOT NULL
+        AND START_YEAR = 2023
+    LIMIT 100
+),
+expected AS (
+    SELECT 
+        PRIMARY_TITLE,
+        RUNTIME_MINUTES,
+        NTILE(4) OVER (ORDER BY RUNTIME_MINUTES) as quartile
+    FROM title_basics
+    WHERE TITLE_TYPE = 'movie'
+        AND RUNTIME_MINUTES IS NOT NULL
+        AND START_YEAR = 2023
+    LIMIT 100
+)
+SELECT 
+    CASE 
+        WHEN COUNT(*) = 0 THEN '⚠️ No results - add your solution'
+        WHEN EXISTS (
+            SELECT 1 FROM your_solution y 
+            JOIN expected e ON y.PRIMARY_TITLE = e.PRIMARY_TITLE 
+            WHERE COALESCE(y.quartile,0) != e.quartile
+        ) THEN '❌ NTILE quartiles incorrect'
+        ELSE '✅ CORRECT! NTILE quartiles working!'
+    END as result
+FROM your_solution;
+
+
+-- TEST 12: Second Highest per Group
+WITH your_solution AS (
+    WITH ranked_runtimes AS (
+        SELECT 
+            GENRES,
+            RUNTIME_MINUTES,
+            DENSE_RANK() OVER (PARTITION BY GENRES ORDER BY RUNTIME_MINUTES DESC) as runtime_rank
+        FROM title_basics
+        WHERE TITLE_TYPE = 'movie'
+            AND RUNTIME_MINUTES IS NOT NULL
+            AND GENRES IS NOT NULL
+    )
+    SELECT 
+        GENRES,
+        RUNTIME_MINUTES as second_highest_runtime
+    FROM ranked_runtimes 
+    WHERE runtime_rank = 2
+),
+expected AS (
+    WITH ranked_runtimes AS (
+        SELECT 
+            GENRES,
+            RUNTIME_MINUTES,
+            DENSE_RANK() OVER (PARTITION BY GENRES ORDER BY RUNTIME_MINUTES DESC) as dr
+        FROM title_basics
+        WHERE TITLE_TYPE = 'movie'
+            AND RUNTIME_MINUTES IS NOT NULL
+            AND GENRES IS NOT NULL
+    )
+    SELECT GENRES, RUNTIME_MINUTES as second_highest_runtime
+    FROM ranked_runtimes 
+    WHERE dr = 2
+)
+SELECT 
+    CASE 
+        WHEN COUNT(*) = 0 THEN '⚠️ No results - add your solution'
+        WHEN COUNT(DISTINCT GENRES) < (SELECT COUNT(DISTINCT GENRES) FROM expected) * 0.8 
+            THEN '❌ Missing genres - check DENSE_RANK logic'
+        ELSE '✅ CORRECT! Second highest found!'
+    END as result,
+    COUNT(DISTINCT GENRES) as genres_found
+FROM your_solution;
+
+
+-- TEST 13: Median Calculation
+WITH your_solution AS (
+    SELECT 
+        START_YEAR,
+        COUNT(*) as movie_count,
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY RUNTIME_MINUTES) as median_runtime,
+        AVG(RUNTIME_MINUTES) as mean_runtime
+    FROM title_basics
+    WHERE TITLE_TYPE = 'movie'
+        AND RUNTIME_MINUTES IS NOT NULL
+        AND START_YEAR BETWEEN 2020 AND 2024
+    GROUP BY START_YEAR
+),
+expected AS (
+    SELECT 
+        START_YEAR,
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY RUNTIME_MINUTES) as median_runtime
+    FROM title_basics
+    WHERE TITLE_TYPE = 'movie'
+        AND RUNTIME_MINUTES IS NOT NULL
+        AND START_YEAR BETWEEN 2020 AND 2024
+    GROUP BY START_YEAR
+)
+SELECT 
+    CASE 
+        WHEN COUNT(*) = 0 THEN '⚠️ No results - add your solution'
+        WHEN EXISTS (
+            SELECT 1 FROM your_solution y 
+            JOIN expected e ON y.START_YEAR = e.START_YEAR 
+            WHERE ABS(COALESCE(y.median_runtime,0) - e.median_runtime) > 0.1
+        ) THEN '❌ Median calculation incorrect'
+        ELSE '✅ CORRECT! Median calculation perfect!'
+    END as result
+FROM your_solution;
+
+
+-- TEST 14: Date-Based Rolling Windows
+WITH your_solution AS (
+    WITH actor_yearly AS (
+        SELECT 
+            tp.PERSON_CODE,
+            nb.PRIMARY_NAME,
+            tb.START_YEAR,
+            COUNT(*) as movies_this_year
+        FROM title_principals tp
+        JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+        JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
+        WHERE tp.PERSON_CODE = 'nm0000093'
+            AND tb.TITLE_TYPE = 'movie'
+            AND tb.START_YEAR IS NOT NULL
+        GROUP BY tp.PERSON_CODE, nb.PRIMARY_NAME, tb.START_YEAR
+    )
+    SELECT 
+        PRIMARY_NAME,
+        START_YEAR,
+        movies_this_year,
+        SUM(movies_this_year) OVER (
+            PARTITION BY PRIMARY_NAME 
+            ORDER BY START_YEAR 
+            ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        ) as rolling_3year_total
+    FROM actor_yearly
+),
+expected AS (
+    WITH actor_yearly AS (
+        SELECT 
+            tp.PERSON_CODE,
+            nb.PRIMARY_NAME,
+            tb.START_YEAR,
+            COUNT(*) as movies_this_year
+        FROM title_principals tp
+        JOIN title_basics tb ON tp.TITLE_CODE = tb.TITLE_CODE
+        JOIN name_basics nb ON tp.PERSON_CODE = nb.PERSON_CODE
+        WHERE tp.PERSON_CODE = 'nm0000093'
+            AND tb.TITLE_TYPE = 'movie'
+            AND tb.START_YEAR IS NOT NULL
+        GROUP BY tp.PERSON_CODE, nb.PRIMARY_NAME, tb.START_YEAR
+    )
+    SELECT 
+        PRIMARY_NAME,
+        START_YEAR,
+        movies_this_year,
+        SUM(movies_this_year) OVER (
+            ORDER BY START_YEAR 
+            ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        ) as rolling_3year_total
+    FROM actor_yearly
+)
+SELECT 
+    CASE 
+        WHEN COUNT(*) = 0 THEN '⚠️ No results - add your solution'
+        WHEN EXISTS (
+            SELECT 1 FROM your_solution y 
+            JOIN expected e ON y.START_YEAR = e.START_YEAR 
+            WHERE y.rolling_3year_total != e.rolling_3year_total
+        ) THEN '❌ Rolling window calculation incorrect'
+        ELSE '✅ CORRECT! 3-year rolling window working!'
+    END as result
+FROM your_solution;
+
+
+-- TEST 15: Self-Join with Window Functions
+WITH your_solution AS (
+    WITH collaborations AS (
+        SELECT 
+            tp1.PERSON_CODE as actor1,
+            tp2.PERSON_CODE as actor2,
+            COUNT(DISTINCT tp1.TITLE_CODE) as movies_together
+        FROM title_principals tp1
+        JOIN title_principals tp2 
+            ON tp1.TITLE_CODE = tp2.TITLE_CODE 
+            AND tp1.PERSON_CODE < tp2.PERSON_CODE
+        WHERE tp1.JOB_CATEGORY IN ('actor', 'actress')
+            AND tp2.JOB_CATEGORY IN ('actor', 'actress')
+        GROUP BY tp1.PERSON_CODE, tp2.PERSON_CODE
+        HAVING COUNT(DISTINCT tp1.TITLE_CODE) > 5
+    ),
+    ranked_collaborations AS (
+        SELECT 
+            actor1,
+            actor2,
+            movies_together,
+            RANK() OVER (ORDER BY movies_together DESC) as collaboration_rank
+        FROM collaborations
+    )
+    SELECT 
+        actor1,
+        actor2,
+        movies_together,
+        collaboration_rank
+    FROM ranked_collaborations
+    WHERE collaboration_rank <= 10
+),
+validation AS (
+    SELECT COUNT(*) as result_count
+    FROM your_solution
+    WHERE collaboration_rank <= 10
+)
+SELECT 
+    CASE 
+        WHEN result_count = 0 THEN '⚠️ No results - add your solution'
+        WHEN result_count > 0 THEN '✅ CORRECT! Top collaborations found!'
+        ELSE '❌ Check your RANK logic'
+    END as result
+FROM validation;
