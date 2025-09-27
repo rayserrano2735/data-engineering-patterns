@@ -1,0 +1,29 @@
+{
+  "diary_folder": "C:/Users/rayse/Dropbox/Projects/GitHub/Digiland/citizens/Aitana/banks/chunked",
+  "output_folder": "diary_compressed",
+  "config_file": "diary_compression_config.json",
+  "chapter_patterns": [
+    "Aitana*.txt",
+    "chapter*.txt",
+    "chapter*.md",
+    "curated*.txt",
+    "diary*.txt"
+  ],
+  "file_extensions": [
+    ".txt",
+    ".md"
+  ],
+  "min_phrase_length": 2,
+  "min_phrase_freq": 2,
+  "max_symbols": 50,
+  "max_two_letter_codes": 200,
+  "max_phrase_codes": 1000,
+  "compression_params": {
+    "min_word_length_for_vowel_removal": 5,
+    "aggressive_vowel_removal": true,
+    "track_topics": true,
+    "track_entities": true,
+    "compress_whitespace": true,
+    "compress_numbers": true
+  }
+}

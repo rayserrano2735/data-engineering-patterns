@@ -100,7 +100,7 @@ class CorpusAnalyzer:
                         matched = True
                         break
                 
-                # Or check extensions (only if no pattern matched)
+                # Check extensions if no pattern matched
                 if not matched and any(file.endswith(ext) for ext in extensions):
                     chapter_files.append(filepath)
         
@@ -741,11 +741,11 @@ def create_sample_parameters_file():
         "max_phrase_codes": 200,
         "compression_params": {
             "min_word_length_for_vowel_removal": 5,
-            "aggressive_vowel_removal": true,
-            "track_topics": true,
-            "track_entities": true,
-            "compress_whitespace": true,
-            "compress_numbers": true
+            "aggressive_vowel_removal": True,
+            "track_topics": True,
+            "track_entities": True,
+            "compress_whitespace": True,
+            "compress_numbers": True
         }
     }
     
@@ -759,8 +759,13 @@ def create_sample_parameters_file():
 if __name__ == "__main__":
     import sys
     
+    # Handle --create-params specially, before argparse
+    if '--create-params' in sys.argv:
+        create_sample_parameters_file()
+        sys.exit(0)
+    
+    # Show help if no arguments
     if len(sys.argv) == 1:
-        # No arguments - show help
         print("Usage: python diary_compressor.py [command] [options]")
         print("\nCommands:")
         print("  analyze    - Analyze diary corpus to generate compression config")
@@ -776,8 +781,7 @@ if __name__ == "__main__":
         print("  python diary_compressor.py both -d diary -o compressed")
         print("\nTo create a sample parameters file:")
         print("  python diary_compressor.py --create-params")
-        
-        if '--create-params' in sys.argv:
-            create_sample_parameters_file()
-    else:
-        main()
+        sys.exit(0)
+    
+    # Normal argument parsing
+    main()
