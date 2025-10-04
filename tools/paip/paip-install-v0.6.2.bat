@@ -1,0 +1,320 @@
+@echo off
+setlocal enabledelayedexpansion
+
+echo ===============================================
+echo Python Analytics Interview Prep v0.6.2
+echo ===============================================
+echo.
+echo This will install the platform to your system.
+echo.
+set /p CONTINUE="Continue with installation? (Y/n): "
+
+if /i "%CONTINUE%"=="n" (
+    echo Installation aborted.
+    pause
+    exit /b 0
+)
+
+echo.
+
+REM Check if git is available
+git --version >nul 2>&1
+if errorlevel 1 (
+    echo ERROR: Git is not installed or not in PATH
+    echo Please install Git from https://git-scm.com
+    pause
+    exit /b 1
+)
+
+REM Determine default installation location
+REM Try Dropbox location first, fallback to GitHub folder
+set DEFAULT_INSTALL=%USERPROFILE%\Dropbox\Projects\GitHub\python-analytics-interview-prep
+if not exist "%USERPROFILE%\Dropbox\Projects\GitHub" (
+    set DEFAULT_INSTALL=%USERPROFILE%\GitHub\python-analytics-interview-prep
+)
+
+REM Prompt for installation location
+echo Default installation location:
+echo %DEFAULT_INSTALL%
+echo.
+set /p USE_DEFAULT="Install to default location? (Y/n): "
+
+if /i "%USE_DEFAULT%"=="n" (
+    set /p CUSTOM_INSTALL="Enter custom installation path: "
+    set REPO_DIR=!CUSTOM_INSTALL!
+) else (
+    set REPO_DIR=%DEFAULT_INSTALL%
+)
+
+echo.
+echo Installing to: %REPO_DIR%
+echo.
+
+REM Create parent directories if they don't exist
+for %%F in ("%REPO_DIR%") do set PARENT_DIR=%%~dpF
+if not exist "%PARENT_DIR%" (
+    echo Creating parent directories...
+    mkdir "%PARENT_DIR%" 2>nul
+)
+
+REM Create repo directory if it doesn't exist
+if not exist "%REPO_DIR%" (
+    echo Creating repository directory...
+    mkdir "%REPO_DIR%"
+)
+
+REM Change to repo directory
+cd /d "%REPO_DIR%"
+
+REM Initialize git if needed
+if not exist .git (
+    echo Initializing git repository...
+    git init
+    git config core.autocrlf false
+) else (
+    git config core.autocrlf false
+)
+
+REM Check for old structure before extracting
+echo.
+echo Checking for old structure...
+set OLD_STRUCTURE_FOUND=0
+
+REM Check if any old structure exists (files/folders that shouldn't be at root)
+for /d %%D in (*) do (
+    if /i not "%%D"=="platform" (
+        if /i not "%%D"=="study" (
+            if /i not "%%D"==".git" (
+                set OLD_STRUCTURE_FOUND=1
+            )
+        )
+    )
+)
+
+REM Also check for old files at root (excluding expected ones)
+for %%F in (*) do (
+    if /i not "%%F"==".gitignore" (
+        if /i not "%%F"=="README.md" (
+            set OLD_STRUCTURE_FOUND=1
+        )
+    )
+)
+
+REM If old structure found, offer to move to rollback
+if %OLD_STRUCTURE_FOUND%==1 (
+    echo Old structure detected.
+    echo.
+    echo The following will be moved to rollback folder:
+    for /d %%D in (*) do (
+        if /i not "%%D"=="platform" (
+            if /i not "%%D"=="study" (
+                if /i not "%%D"==".git" (
+                    echo   - %%D\
+                )
+            )
+        )
+    )
+    for %%F in (*) do (
+        if /i not "%%F"==".gitignore" (
+            if /i not "%%F"=="README.md" (
+                echo   - %%F
+            )
+        )
+    )
+    echo.
+    set /p CLEANUP="Move old structure to rollback folder? (Y/n): "
+    
+    if /i not "!CLEANUP!"=="n" (
+        REM Create rollback folder in Downloads with timestamp
+        for /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set DATESTR=%%c%%a%%b)
+        set ROLLBACK_DIR=%USERPROFILE%\Downloads\paip-rollback-%DATESTR%
+        
+        echo.
+        echo Creating rollback folder: !ROLLBACK_DIR!
+        mkdir "!ROLLBACK_DIR!" 2>nul
+        
+        REM Move old files/folders to rollback
+        echo Moving old structure to rollback...
+        for /d %%D in (*) do (
+            if /i not "%%D"=="platform" (
+                if /i not "%%D"=="study" (
+                    if /i not "%%D"==".git" (
+                        echo Moving %%D...
+                        move "%%D" "!ROLLBACK_DIR!\" >nul 2>&1
+                    )
+                )
+            )
+        )
+        for %%F in (*) do (
+            if /i not "%%F"==".gitignore" (
+                if /i not "%%F"=="README.md" (
+                    echo Moving %%F...
+                    move "%%F" "!ROLLBACK_DIR!\" >nul 2>&1
+                )
+            )
+        )
+        
+        echo.
+        echo Old structure moved to: !ROLLBACK_DIR!
+        echo You can delete this folder once you verify the new installation.
+    )
+)
+
+echo.
+
+REM Find the zip file (look in script's directory)
+set SCRIPT_DIR=%~dp0
+set ZIP_FILE=%SCRIPT_DIR%paip-platform-v0.6.2.zip
+
+if not exist "%ZIP_FILE%" (
+    echo ERROR: Cannot find paip-platform-v0.6.2.zip
+    echo Expected location: %ZIP_FILE%
+    echo Please ensure the zip file is in the same directory as this installer
+    pause
+    exit /b 1
+)
+
+REM Remove old platform folder completely before extraction
+if exist platform (
+    echo Removing old platform folder...
+    rd /s /q platform
+)
+
+REM Extract platform zip
+echo Extracting platform files...
+powershell -command "Expand-Archive -Path '%ZIP_FILE%' -DestinationPath . -Force"
+if errorlevel 1 (
+    echo ERROR: Failed to extract platform files
+    pause
+    exit /b 1
+)
+echo.
+
+REM Create study workspace structure (idempotent)
+echo Setting up study workspace...
+if not exist study mkdir study
+if not exist study\practice_work mkdir study\practice_work
+if not exist study\notes mkdir study\notes
+if not exist study\mock_interviews mkdir study\mock_interviews
+
+REM Create .gitkeep files
+echo. > study\practice_work\.gitkeep
+echo. > study\notes\.gitkeep
+echo. > study\mock_interviews\.gitkeep
+echo.
+
+REM Check if repo has any commits (brand new repo case)
+git rev-parse HEAD >nul 2>&1
+if errorlevel 1 (
+    REM Brand new repo - create initial commit
+    echo Creating initial commit...
+    git add platform/
+    git add .gitignore
+    git add README.md
+    git add study/
+    git commit -m "Platform v0.6.2"
+    
+    REM Create tag
+    git tag -a v0.6.2 -m "Release v0.6.2"
+    echo Created tag v0.6.2
+) else (
+    REM Existing repo - check for staged changes
+    git diff --cached --quiet
+    if errorlevel 1 (
+        echo Unstaging previous install...
+        git reset HEAD
+    )
+    
+    REM Stage platform files
+    echo Committing platform files...
+    git add platform/
+    git add .gitignore
+    git add README.md
+    git add study/
+    
+    REM Commit
+    git commit -m "Platform v0.6.2" >nul 2>&1
+    if errorlevel 1 (
+        echo No changes to commit
+    ) else (
+        echo Committed platform v0.6.2
+    )
+    
+    REM Tag (silently fail if exists)
+    git tag -a v0.6.2 -m "Release v0.6.2" 2>nul
+    if errorlevel 1 (
+        echo Note: Tag v0.6.2 already exists
+    ) else (
+        echo Created tag v0.6.2
+    )
+)
+
+echo.
+echo ===============================================
+echo Installation complete!
+echo ===============================================
+echo.
+echo Repository: %REPO_DIR%
+echo.
+
+REM Optional: Copy to version control
+echo.
+set /p COPY_TO_VC="Copy installer and platform to version control? (Y/n): "
+
+if /i not "%COPY_TO_VC%"=="n" (
+    REM Determine default VC location
+    set DEFAULT_VC=%USERPROFILE%\Dropbox\Projects\GitHub\data-engineering-patterns\tools\paip
+    if not exist "%USERPROFILE%\Dropbox\Projects\GitHub\data-engineering-patterns" (
+        set DEFAULT_VC=%USERPROFILE%\GitHub\data-engineering-patterns\tools\paip
+    )
+    
+    echo.
+    echo Default version control location:
+    echo !DEFAULT_VC!
+    echo.
+    set /p USE_VC_DEFAULT="Use default VC location? (Y/n): "
+    
+    if /i "!USE_VC_DEFAULT!"=="n" (
+        set /p CUSTOM_VC="Enter custom VC path: "
+        set VC_DIR=!CUSTOM_VC!
+    ) else (
+        set VC_DIR=!DEFAULT_VC!
+    )
+    
+    REM Create VC directory if it doesn't exist
+    if not exist "!VC_DIR!" (
+        echo Creating VC directory: !VC_DIR!
+        mkdir "!VC_DIR!" 2>nul
+    )
+    
+    REM Copy installer and platform zip to VC location
+    echo Copying to version control...
+    copy "%SCRIPT_DIR%paip-install-v0.6.2.bat" "!VC_DIR!\" >nul
+    copy "%ZIP_FILE%" "!VC_DIR!\" >nul
+    
+    if errorlevel 1 (
+        echo WARNING: Failed to copy to version control
+    ) else (
+        echo Successfully copied to: !VC_DIR!
+    )
+)
+
+echo.
+echo Next steps:
+echo   1. Review README.md for getting started guide
+echo   2. Explore platform/content/ for learning materials
+echo   3. Run platform/tools/bootstrap.py for environment setup
+echo.
+echo Your work goes in the study/ directory
+echo It will never be overwritten by platform updates
+echo.
+
+REM Prompt to open README
+set /p OPEN_README="Open README.md now? (y/N): "
+if /i "%OPEN_README%"=="y" (
+    cd /d "%REPO_DIR%"
+    start README.md
+)
+
+echo.
+pause
