@@ -61,6 +61,93 @@ if not exist .git (
     git init
 )
 
+REM Check for old structure before extracting
+echo.
+echo Checking for old structure...
+set OLD_STRUCTURE_FOUND=0
+
+REM Check if any old structure exists (files/folders that shouldn't be at root)
+for /d %%D in (*) do (
+    if /i not "%%D"=="platform" (
+        if /i not "%%D"=="study" (
+            if /i not "%%D"==".git" (
+                set OLD_STRUCTURE_FOUND=1
+            )
+        )
+    )
+)
+
+REM Also check for old files at root (excluding expected ones)
+for %%F in (*) do (
+    if /i not "%%F"==".gitignore" (
+        if /i not "%%F"=="README.md" (
+            set OLD_STRUCTURE_FOUND=1
+        )
+    )
+)
+
+REM If old structure found, offer to move to rollback
+if %OLD_STRUCTURE_FOUND%==1 (
+    echo Old structure detected.
+    echo.
+    echo The following will be moved to rollback folder:
+    for /d %%D in (*) do (
+        if /i not "%%D"=="platform" (
+            if /i not "%%D"=="study" (
+                if /i not "%%D"==".git" (
+                    echo   - %%D\
+                )
+            )
+        )
+    )
+    for %%F in (*) do (
+        if /i not "%%F"==".gitignore" (
+            if /i not "%%F"=="README.md" (
+                echo   - %%F
+            )
+        )
+    )
+    echo.
+    set /p CLEANUP="Move old structure to rollback folder? (Y/n): "
+    
+    if /i not "!CLEANUP!"=="n" (
+        REM Create rollback folder in Downloads with timestamp
+        for /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set DATESTR=%%c%%a%%b)
+        set ROLLBACK_DIR=%USERPROFILE%\Downloads\paip-rollback-%DATESTR%
+        
+        echo.
+        echo Creating rollback folder: !ROLLBACK_DIR!
+        mkdir "!ROLLBACK_DIR!" 2>nul
+        
+        REM Move old files/folders to rollback
+        echo Moving old structure to rollback...
+        for /d %%D in (*) do (
+            if /i not "%%D"=="platform" (
+                if /i not "%%D"=="study" (
+                    if /i not "%%D"==".git" (
+                        echo Moving %%D...
+                        move "%%D" "!ROLLBACK_DIR!\" >nul 2>&1
+                    )
+                )
+            )
+        )
+        for %%F in (*) do (
+            if /i not "%%F"==".gitignore" (
+                if /i not "%%F"=="README.md" (
+                    echo Moving %%F...
+                    move "%%F" "!ROLLBACK_DIR!\" >nul 2>&1
+                )
+            )
+        )
+        
+        echo.
+        echo Old structure moved to: !ROLLBACK_DIR!
+        echo You can delete this folder once you verify the new installation.
+    )
+)
+
+echo.
+
 REM Find the zip file (look in script's directory)
 set SCRIPT_DIR=%~dp0
 set ZIP_FILE=%SCRIPT_DIR%paip-platform-v0.5.0.1.zip
@@ -152,9 +239,9 @@ echo.
 
 REM Optional: Copy to version control
 echo.
-set /p COPY_TO_VC="Copy installer and platform to version control? (y/N): "
+set /p COPY_TO_VC="Copy installer and platform to version control? (Y/n): "
 
-if /i "%COPY_TO_VC%"=="y" (
+if /i not "%COPY_TO_VC%"=="n" (
     REM Determine default VC location
     set DEFAULT_VC=%USERPROFILE%\Dropbox\Projects\GitHub\data-engineering-patterns\tools\paip
     if not exist "%USERPROFILE%\Dropbox\Projects\GitHub\data-engineering-patterns" (
