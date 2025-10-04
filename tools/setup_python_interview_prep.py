@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Setup Python Analytics Interview Prep Repository
-VERSION: 3.2.6
+VERSION: 0.5
 
 Smart installer with runtime merge intelligence.
 Detects existing state and applies appropriate updates.
@@ -37,7 +37,7 @@ from datetime import datetime
 REPO_NAME = "python-analytics-interview-prep"
 
 # Version
-VERSION = "3.2.6"
+VERSION = "0.5"
 
 # ============================================================================
 # EMBEDDED CONTENT DEFINITIONS
@@ -193,7 +193,12 @@ class CorePatterns:
 PLATFORM_DOCS = {
     'docs/RELEASE_NOTES.md': '''# RELEASE NOTES - Python Analytics Interview Prep Platform
 
-## Current Production Version: 3.2.3
+## Current Production Version: 3.2.6
+
+### Version 3.2.6 - Base64 Fix
+- Fixed: Handle placeholder text in binary files
+- Fixed: Proper error handling for invalid base64 content
+- Added: Skip binary files with placeholder content
 
 [Full release notes content...]
 ''',
@@ -255,9 +260,109 @@ services:
 ''',
 }
 
-# Binary files (base64 encoded)
-BINARY_FILES = {
-    'data/flashcards_complete.xlsx': '''[BASE64_ENCODED_EXCEL_CONTENT_HERE]''',
+# Data files (text format)
+# Data files (pipe-delimited flashcards - ready for Cram.com)
+# Note: Flashcards are generated dynamically to handle multi-line code properly
+def generate_flashcards():
+    """Generate flashcard content with proper formatting"""
+    cards = []
+    cards.append(("Front", "Back", "Category"))
+    
+    # Pattern Recognition cards (20)
+    cards.append(("Find top 5 products by revenue in each region", "df.sort_values('revenue', ascending=False).groupby('region').head(5)", "Pattern Recognition"))
+    cards.append(("Get bottom 3 items by score per category", "df.sort_values('score').groupby('category').head(3)", "Pattern Recognition"))
+    cards.append(("Remove duplicates keeping first occurrence", "df.drop_duplicates(keep='first')", "Pattern Recognition"))
+    cards.append(("Remove duplicates based on specific columns", "df.drop_duplicates(subset=['col1', 'col2'])", "Pattern Recognition"))
+    cards.append(("Calculate 7-day rolling average", "df['metric'].rolling(window=7).mean()", "Pattern Recognition"))
+    cards.append(("Calculate cumulative sum by group", "df.groupby('group')['value'].cumsum()", "Pattern Recognition"))
+    cards.append(("Group by category and sum values", "df.groupby('category')['value'].sum()", "Pattern Recognition"))
+    cards.append(("Group by multiple columns with multiple aggregations", "df.groupby(['cat1', 'cat2']).agg({'val': 'sum', 'qty': 'mean'})", "Pattern Recognition"))
+    cards.append(("Filter rows where column > threshold", "df[df['column'] > threshold]", "Pattern Recognition"))
+    cards.append(("Filter rows with multiple conditions", "df[(df['col1'] > 5) & (df['col2'] == 'value')]", "Pattern Recognition"))
+    cards.append(("Merge two dataframes on a key", "pd.merge(df1, df2, on='key', how='left')", "Pattern Recognition"))
+    cards.append(("Merge with different column names", "pd.merge(df1, df2, left_on='id', right_on='user_id')", "Pattern Recognition"))
+    cards.append(("Fill missing values with a constant", "df['column'].fillna(0)", "Pattern Recognition"))
+    cards.append(("Fill missing values with mean", "df['column'].fillna(df['column'].mean())", "Pattern Recognition"))
+    cards.append(("Forward fill missing values", "df.fillna(method='ffill')", "Pattern Recognition"))
+    cards.append(("Find rows with any null values", "df[df.isnull().any(axis=1)]", "Pattern Recognition"))
+    cards.append(("Count null values per column", "df.isnull().sum()", "Pattern Recognition"))
+    cards.append(("Pivot table with values and aggregation", "df.pivot_table(values='sales', index='region', columns='product', aggfunc='sum')", "Pattern Recognition"))
+    cards.append(("Rank items within groups", "df.groupby('group')['value'].rank(method='dense', ascending=False)", "Pattern Recognition"))
+    cards.append(("Get year-over-year change", "df.groupby('category')['sales'].pct_change(periods=12)", "Pattern Recognition"))
+    
+    # Gotchas cards (15) - with multi-line code
+    cards.append(("Sort a list WITHOUT using .sort() or sorted()", "for i in range(len(arr)):\\n    for j in range(i+1, len(arr)):\\n        if arr[i] > arr[j]:\\n            arr[i], arr[j] = arr[j], arr[i]", "Gotchas"))
+    cards.append(("Group data WITHOUT using .groupby()", "result = {}\\nfor row in df.itertuples():\\n    key = row.category\\n    if key not in result:\\n        result[key] = []\\n    result[key].append(row.value)", "Gotchas"))
+    cards.append(("Remove duplicates WITHOUT .drop_duplicates()", "seen = set()\\nresult = []\\nfor item in items:\\n    if item not in seen:\\n        seen.add(item)\\n        result.append(item)", "Gotchas"))
+    cards.append(("Find max WITHOUT using max()", "max_val = float('-inf')\\nfor val in values:\\n    if val > max_val:\\n        max_val = val", "Gotchas"))
+    cards.append(("Count occurrences WITHOUT value_counts()", "counts = {}\\nfor val in series:\\n    counts[val] = counts.get(val, 0) + 1", "Gotchas"))
+    cards.append(("Reverse a list WITHOUT [::-1] or reverse()", "reversed_list = []\\nfor i in range(len(lst)-1, -1, -1):\\n    reversed_list.append(lst[i])", "Gotchas"))
+    cards.append(("Flatten nested list WITHOUT itertools", "flat = []\\nfor sublist in nested:\\n    for item in sublist:\\n        flat.append(item)", "Gotchas"))
+    cards.append(("Join strings WITHOUT .join()", "result = ''\\nfor i, s in enumerate(strings):\\n    result += s\\n    if i < len(strings) - 1:\\n        result += delimiter", "Gotchas"))
+    cards.append(("Filter list WITHOUT list comprehension or filter()", "result = []\\nfor item in items:\\n    if condition(item):\\n        result.append(item)", "Gotchas"))
+    cards.append(("Create dict from two lists WITHOUT zip()", "d = {}\\nfor i in range(len(keys)):\\n    d[keys[i]] = values[i]", "Gotchas"))
+    cards.append(("Check if all elements true WITHOUT all()", "all_true = True\\nfor val in values:\\n    if not val:\\n        all_true = False\\n        break", "Gotchas"))
+    cards.append(("Check if any element true WITHOUT any()", "any_true = False\\nfor val in values:\\n    if val:\\n        any_true = True\\n        break", "Gotchas"))
+    cards.append(("Find index WITHOUT .index()", "idx = -1\\nfor i, val in enumerate(lst):\\n    if val == target:\\n        idx = i\\n        break", "Gotchas"))
+    cards.append(("Sum values WITHOUT sum()", "total = 0\\nfor val in values:\\n    total += val", "Gotchas"))
+    cards.append(("Get unique values WITHOUT set()", "unique = []\\nfor val in values:\\n    if val not in unique:\\n        unique.append(val)", "Gotchas"))
+    
+    # Syntax Essentials cards (15)
+    cards.append(("Read CSV file with pandas", "pd.read_csv('file.csv')", "Syntax Essentials"))
+    cards.append(("Read CSV with specific delimiter", "pd.read_csv('file.csv', sep='|')", "Syntax Essentials"))
+    cards.append(("Save dataframe to CSV", "df.to_csv('output.csv', index=False)", "Syntax Essentials"))
+    cards.append(("Create empty dataframe with columns", "pd.DataFrame(columns=['col1', 'col2', 'col3'])", "Syntax Essentials"))
+    cards.append(("Add new column to dataframe", "df['new_col'] = values", "Syntax Essentials"))
+    cards.append(("Rename columns", "df.rename(columns={'old': 'new'})", "Syntax Essentials"))
+    cards.append(("Drop columns", "df.drop(columns=['col1', 'col2'])", "Syntax Essentials"))
+    cards.append(("Reset index after operations", "df.reset_index(drop=True)", "Syntax Essentials"))
+    cards.append(("Apply function to column", "df['col'].apply(lambda x: x * 2)", "Syntax Essentials"))
+    cards.append(("Convert string to datetime", "pd.to_datetime(df['date_string'])", "Syntax Essentials"))
+    cards.append(("Get value counts", "df['column'].value_counts()", "Syntax Essentials"))
+    cards.append(("Check data types", "df.dtypes", "Syntax Essentials"))
+    cards.append(("Get dataframe shape", "df.shape", "Syntax Essentials"))
+    cards.append(("Get first n rows", "df.head(n)", "Syntax Essentials"))
+    cards.append(("Sample random rows", "df.sample(n=100)", "Syntax Essentials"))
+    
+    # Comprehensions cards (5)
+    cards.append(("Basic list comprehension syntax", "[expression for item in iterable if condition]", "Comprehensions"))
+    cards.append(("List comprehension with conditional expression", "['even' if x % 2 == 0 else 'odd' for x in range(5)]", "Comprehensions"))
+    cards.append(("Nested list comprehension for flattening", "[item for sublist in matrix for item in sublist]", "Comprehensions"))
+    cards.append(("Dictionary comprehension", "{key: value for key, value in items.items() if condition}", "Comprehensions"))
+    cards.append(("Set comprehension to get unique values", "{x**2 for x in numbers}", "Comprehensions"))
+    
+    # Lambda Functions cards (5)
+    cards.append(("Lambda function basic syntax", "lambda arguments: expression", "Lambda Functions"))
+    cards.append(("Sort with lambda by specific key", "sorted(data, key=lambda x: x['age'])", "Lambda Functions"))
+    cards.append(("Apply lambda to pandas column", "df['col'].apply(lambda x: x * 2 if x > 0 else 0)", "Lambda Functions"))
+    cards.append(("Map with lambda function", "list(map(lambda x: x**2, numbers))", "Lambda Functions"))
+    cards.append(("Filter with lambda function", "list(filter(lambda x: x % 2 == 0, numbers))", "Lambda Functions"))
+    
+    # Error Handling cards (5)
+    cards.append(("Basic try-except structure", "try:\\n    risky_operation()\\nexcept Exception as e:\\n    handle_error(e)", "Error Handling"))
+    cards.append(("Handle multiple exception types", "try:\\n    code\\nexcept ValueError:\\n    handle_value\\nexcept KeyError:\\n    handle_key", "Error Handling"))
+    cards.append(("Try-except with finally clause", "try:\\n    open_file()\\nexcept:\\n    handle_error()\\nfinally:\\n    close_file()", "Error Handling"))
+    cards.append(("Retry logic with exponential backoff", "for i in range(retries):\\n    try:\\n        operation()\\n        break\\n    except:\\n        sleep(2**i)", "Error Handling"))
+    cards.append(("Using context manager for files", "with open('file.txt', 'r') as f:\\n    data = f.read()", "Error Handling"))
+    
+    # Functions cards (5)
+    cards.append(("Function with default arguments", "def func(data, method='mean', nulls=True):\\n    process(data)", "Functions"))
+    cards.append(("Avoid mutable default arguments", "def func(item, target=None):\\n    if target is None:\\n        target = []", "Functions"))
+    cards.append(("Function with *args and **kwargs", "def func(*args, **kwargs):\\n    positional = args\\n    keyword = kwargs", "Functions"))
+    cards.append(("Return multiple values from function", "def func():\\n    return value1, value2, value3", "Functions"))
+    cards.append(("Closure - function returning function", "def outer(x):\\n    def inner(y):\\n        return x + y\\n    return inner", "Functions"))
+    
+    # Convert to pipe-delimited format (replace \\n with actual newlines in output)
+    result = []
+    for front, back, category in cards:
+        # Replace \\n with actual newlines for the output file
+        back = back.replace('\\n', '\n')
+        result.append(f"{front}|{back}|{category}")
+    
+    return '\n'.join(result)
+
+DATA_FILES = {
+    'data/flashcards_complete.txt': generate_flashcards(),
 }
 
 # ============================================================================
@@ -314,7 +419,7 @@ class SmartMergeEngine:
         """
         Create a file, ensuring all subdirectories exist.
         
-        FIXED: Properly handles nested paths like 'docs/guides/advanced.md'
+        FIXED: Handles placeholder text in binary files
         """
         full_path = self.repo_path / relative_path
         
@@ -323,10 +428,24 @@ class SmartMergeEngine:
         
         # Write content
         if binary:
-            # Decode base64 for binary files
-            import base64
-            decoded_content = base64.b64decode(content)
-            full_path.write_bytes(decoded_content)
+            # Check if content is just a placeholder
+            if '[BASE64_ENCODED' in content or 'PLACEHOLDER' in content.upper():
+                print(f"  ⚠ Skipping {relative_path} (placeholder content)")
+                return
+                
+            try:
+                # Decode base64 for binary files
+                import base64
+                # Clean up any whitespace
+                content = ''.join(content.split())
+                # Add padding if needed
+                while len(content) % 4:
+                    content += '='
+                decoded_content = base64.b64decode(content)
+                full_path.write_bytes(decoded_content)
+            except Exception as e:
+                print(f"  ⚠ Skipping {relative_path} (invalid base64: {e})")
+                return
         else:
             full_path.write_text(content, encoding='utf-8')
     
@@ -366,6 +485,7 @@ class SmartMergeEngine:
             'docs/PROJECT_STATUS.md',  # Old name
             'docs/SETUP_GUIDE.md',  # Replaced by GETTING_STARTED.md
             'SETUP_GUIDE.md',  # Old location
+            'data/flashcards_complete.xlsx',  # Replaced with .txt for Cram.com
         ]
         
         for file_path in obsolete:
@@ -379,13 +499,13 @@ class SmartMergeEngine:
         
         # Detect current state
         structure = self.detect_structure()
-        print(f"\\n📁 Detected structure: {structure}")
+        print(f"\n📁 Detected structure: {structure}")
         
         if structure == 'none':
-            print("\\n🚀 Performing fresh installation...")
+            print("\n🚀 Performing fresh installation...")
             self.fresh_install()
         else:
-            print("\\n🔄 Updating existing repository...")
+            print("\n🔄 Updating existing repository...")
             
             # Scan for user modifications
             self.scan_user_modifications()
@@ -403,10 +523,13 @@ class SmartMergeEngine:
         # Ensure user directories exist
         self.ensure_user_directories()
         
-        # Offer to create git tag for this version
-        self.offer_git_tag()
+        # Create .gitignore
+        self.create_gitignore()
         
-        print("\\n✅ Platform setup complete!")
+        # Create requirements.txt
+        self.create_requirements()
+        
+        print("\n✅ Platform setup complete!")
     
     def fresh_install(self):
         """Perform a fresh installation."""
@@ -418,16 +541,12 @@ class SmartMergeEngine:
             **PYTHON_SOURCE,
             **PLATFORM_DOCS,
             **DOCKER_CONFIG,
+            **DATA_FILES,
         }
         
         for relative_path, content in all_content.items():
             self.create_file_with_subdirs(relative_path, content)
             print(f"  ✓ Created {relative_path}")
-        
-        # Create binary files
-        for relative_path, content in BINARY_FILES.items():
-            self.create_file_with_subdirs(relative_path, content, binary=True)
-            print(f"  ✓ Created {relative_path} (binary)")
     
     def update_files(self):
         """Update existing files selectively."""
@@ -436,18 +555,13 @@ class SmartMergeEngine:
             **PYTHON_SOURCE,
             **PLATFORM_DOCS,
             **DOCKER_CONFIG,
+            **DATA_FILES,
         }
         
         for relative_path, content in all_content.items():
             if self.should_update_file(relative_path):
                 self.create_file_with_subdirs(relative_path, content)
                 print(f"  ✓ Updated {relative_path}")
-        
-        # Update binary files
-        for relative_path, content in BINARY_FILES.items():
-            if self.should_update_file(relative_path):
-                self.create_file_with_subdirs(relative_path, content, binary=True)
-                print(f"  ✓ Updated {relative_path} (binary)")
     
     def ensure_user_directories(self):
         """Ensure user work directories exist."""
@@ -465,57 +579,55 @@ class SmartMergeEngine:
                 (dir_path / '.gitkeep').write_text('')
                 print(f"  ✓ Created user directory: {dir_name}/")
     
-    def offer_git_tag(self):
-        """Offer to create git tag for this version."""
-        # Check if we're in a git repo
-        if not (self.repo_path / '.git').exists():
-            return
-        
-        print("\n📌 Git Tagging")
-        
-        # Check for uncommitted changes
-        os.chdir(self.repo_path)
-        result = subprocess.run(['git', 'status', '--porcelain'], 
-                              capture_output=True, text=True)
-        
-        if result.stdout.strip():
-            print("  ℹ Uncommitted changes detected")
-            response = input(f"  Create commit for v{VERSION}? (y/n): ").strip().lower()
-            
-            if response == 'y':
-                # Stage all changes
-                subprocess.run(['git', 'add', '.'], check=True)
-                
-                # Create commit
-                commit_msg = f"Release v{VERSION} - Automated setup"
-                subprocess.run(['git', 'commit', '-m', commit_msg], check=True)
-                print(f"  ✓ Created commit for v{VERSION}")
-        
-        # Check if tag exists
-        result = subprocess.run(['git', 'tag', '-l', f'v{VERSION}'],
-                              capture_output=True, text=True)
-        
-        if result.stdout.strip():
-            print(f"  ℹ Tag v{VERSION} already exists")
-        else:
-            response = input(f"  Create tag v{VERSION}? (y/n): ").strip().lower()
-            
-            if response == 'y':
-                # Create annotated tag
-                tag_msg = f"Production Release {VERSION}"
-                subprocess.run(['git', 'tag', '-a', f'v{VERSION}', '-m', tag_msg], 
-                             check=True)
-                print(f"  ✓ Created tag v{VERSION}")
-                
-                # Offer to push
-                response = input("  Push tag to origin? (y/n): ").strip().lower()
-                if response == 'y':
-                    try:
-                        subprocess.run(['git', 'push', 'origin', f'v{VERSION}'], 
-                                     check=True)
-                        print(f"  ✓ Pushed tag v{VERSION} to origin")
-                    except:
-                        print("  ⚠ Could not push tag (check remote configuration)")
+    def create_gitignore(self):
+        """Create .gitignore file."""
+        gitignore_content = """# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Wing IDE
+*.wpr
+*.wpu
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# User work (preserved but not committed)
+practice_work/*
+!practice_work/.gitkeep
+notes/*
+!notes/.gitkeep
+mock_interviews/*
+!mock_interviews/.gitkeep
+"""
+        gitignore_path = self.repo_path / '.gitignore'
+        gitignore_path.write_text(gitignore_content)
+        print("  ✓ Created .gitignore")
+    
+    def create_requirements(self):
+        """Create requirements.txt file."""
+        requirements_content = """# Python Analytics Interview Prep - Requirements
+pandas>=2.0.0
+numpy>=1.24.0
+openpyxl>=3.0.0  # For Excel file handling
+"""
+        requirements_path = self.repo_path / 'requirements.txt'
+        requirements_path.write_text(requirements_content)
+        print("  ✓ Created requirements.txt")
 
 # ============================================================================
 # DOCKER BUILDER
@@ -544,7 +656,7 @@ class DockerBuilder:
     
     def build_image(self):
         """Build Docker image."""
-        print("\\n🐳 Building Docker image...")
+        print("\n🐳 Building Docker image...")
         
         # Check if Wing .deb exists
         wing_deb = self.find_wing_deb()
@@ -561,13 +673,13 @@ class DockerBuilder:
         result = os.system('docker compose build')
         
         if result == 0:
-            print("\\n✅ Docker image built successfully!")
-            print("\\nTo start the container:")
+            print("\n✅ Docker image built successfully!")
+            print("\nTo start the container:")
             print("  docker compose up")
-            print("\\nThen access at: http://localhost:6901")
+            print("\nThen access at: http://localhost:6901")
             print("  Password: student")
         else:
-            print("\\n⚠ Docker build failed. Check Docker is running.")
+            print("\n⚠ Docker build failed. Check Docker is running.")
 
 # ============================================================================
 # MAIN EXECUTION
@@ -604,7 +716,7 @@ def main():
     # Build Docker if requested
     if args.mode in ['docker', 'all']:
         if not repo_path.exists():
-            print("\\n⚠ Repository must exist before building Docker image.")
+            print("\n⚠ Repository must exist before building Docker image.")
             print("  Run with --mode local first.")
             sys.exit(1)
         
@@ -613,13 +725,13 @@ def main():
     
     # Final instructions
     if args.mode == 'local':
-        print(f"\\n📂 Repository ready at: {repo_path}")
-        print("\\nNext steps:")
+        print(f"\n📂 Repository ready at: {repo_path}")
+        print("\nNext steps:")
         print("  1. cd python-analytics-interview-prep")
         print("  2. pip install -r requirements.txt")
-        print("  3. Start with docs/README.md")
+        print("  3. Start with README.md")
     
-    print("\\n" + "=" * 60)
+    print("\n" + "=" * 60)
     print("🎯 Ready for interview prep!")
     print("=" * 60)
 
