@@ -1,0 +1,195 @@
+# Python Analytics Interview Flashcards
+
+## Pattern Recognition (20 cards)
+
+Q: "Find the top 3 products by sales in each category"
+A: Pattern: Top N by Group. Use sort_values() + groupby() + head(n)
+
+Q: "Get customers who haven't ordered in 90 days"
+A: Pattern: Filter + Date arithmetic. Use pd.to_datetime() and boolean indexing
+
+Q: "Remove duplicate customers, keeping the most recent record"
+A: Pattern: Deduplication. Use drop_duplicates(subset=['customer_id'], keep='last')
+
+Q: "Calculate running total of sales by date"
+A: Pattern: Window function. Use cumsum() or groupby().cumsum()
+
+Q: "Pivot sales data from long to wide format"
+A: Pattern: Reshape. Use pivot_table() or pivot()
+
+Q: "Join customers and orders, keeping all customers"
+A: Pattern: Left join. Use pd.merge(how='left')
+
+Q: "Count orders per customer, including customers with 0 orders"
+A: Pattern: Left join + fillna. Merge then fillna(0)
+
+Q: "Find records where value is in top 10%"
+A: Pattern: Percentile filter. Use quantile(0.9) then boolean index
+
+Q: "Get the first and last order date per customer"
+A: Pattern: Groupby agg. Use agg({'date': ['min', 'max']})
+
+Q: "Calculate month-over-month growth"
+A: Pattern: Window function. Use pct_change() or manual calculation with shift()
+
+Q: "Find customers who bought both product A and product B"
+A: Pattern: Set operations. Use groupby + set intersection or double filter
+
+Q: "Replace missing values with category mean"
+A: Pattern: Group imputation. Use transform() with groupby
+
+Q: "Get records where sales increased from previous row"
+A: Pattern: Comparison with lag. Use shift() and boolean indexing
+
+Q: "Flatten nested JSON into DataFrame"
+A: Pattern: JSON normalization. Use pd.json_normalize()
+
+Q: "Concatenate multiple DataFrames with same structure"
+A: Pattern: Vertical stack. Use pd.concat(axis=0)
+
+Q: "Add a column with row numbers within each group"
+A: Pattern: Window ranking. Use groupby().cumcount() + 1
+
+Q: "Filter to dates in the last 30 days"
+A: Pattern: Date filter. Use pd.Timestamp('today') - pd.Timedelta(days=30)
+
+Q: "Get columns that contain 'sales' in the name"
+A: Pattern: Column selection. Use df.filter(like='sales') or list comprehension
+
+Q: "Calculate average sales per customer, handling customers with no sales"
+A: Pattern: Left join + aggregation. Merge then fillna(0) then mean
+
+Q: "Identify outliers beyond 3 standard deviations"
+A: Pattern: Statistical filter. Use abs(df - df.mean()) > 3 * df.std()
+
+## Common Gotchas (15 cards)
+
+Q: When does SettingWithCopyWarning occur?
+A: When modifying a slice/view of a DataFrame. Fix: Use .copy() or .loc[]
+
+Q: Why does my groupby lose other columns?
+A: Groupby only keeps aggregated columns. Use reset_index() to get group keys back
+
+Q: How to avoid "ValueError: The truth value of a Series is ambiguous"?
+A: Use & and | instead of 'and'/'or' for boolean operations on Series
+
+Q: Why is my merge result huge?
+A: Duplicate keys in both DataFrames. Check for duplicates first with duplicated()
+
+Q: How to handle "KeyError" when accessing columns?
+A: Use .get() or check column exists first. Or use .loc[] instead of []
+
+Q: Why doesn't sort() work on my DataFrame?
+A: Use sort_values() not sort(). sort() is for lists
+
+Q: How to avoid iterating over DataFrame rows?
+A: Use vectorized operations, apply(), or numpy functions
+
+Q: Why is my datetime column showing as object?
+A: Not parsed as datetime. Use pd.to_datetime() first
+
+Q: How to properly chain operations without intermediate variables?
+A: Use method chaining with parentheses for multi-line
+
+Q: Why does fillna() not work in place?
+A: Returns new DataFrame by default. Use inplace=True or reassign
+
+Q: How to handle "Can't compare str and int"?
+A: Convert types first using astype() or pd.to_numeric()
+
+Q: Why is my groupby aggregation slow?
+A: Using apply() instead of built-in agg functions. Use agg() with string names
+
+Q: How to avoid "ValueError: cannot reindex from a duplicate axis"?
+A: Check for duplicate index values with duplicated() and handle them
+
+Q: Why does my join have unexpected NaN values?
+A: Wrong join type or keys don't match. Check join keys and use appropriate how=
+
+Q: How to handle mixed types in a column?
+A: Use pd.to_numeric(errors='coerce') or custom function with apply()
+
+## Syntax Essentials (10 cards)
+
+Q: How to select multiple columns?
+A: df[['col1', 'col2']] - note double brackets
+
+Q: How to filter rows and select columns simultaneously?
+A: df.loc[condition, ['col1', 'col2']]
+
+Q: How to rename columns?
+A: df.rename(columns={'old': 'new'}) or df.columns = ['new_names']
+
+Q: How to create a new column based on condition?
+A: df['new'] = np.where(condition, value_if_true, value_if_false)
+
+Q: How to sort by multiple columns?
+A: df.sort_values(['col1', 'col2'], ascending=[True, False])
+
+Q: How to group by multiple columns?
+A: df.groupby(['col1', 'col2']).agg({'col3': 'sum'})
+
+Q: How to reset index after groupby?
+A: .reset_index() or pass as_index=False to groupby()
+
+Q: How to convert column to datetime?
+A: pd.to_datetime(df['col'], format='%Y-%m-%d')
+
+Q: How to fill missing values with forward fill?
+A: df.fillna(method='ffill') or df.ffill()
+
+Q: How to drop rows with any missing values?
+A: df.dropna() or df.dropna(subset=['col1', 'col2'])
+
+## List/Dict Comprehensions (5 cards)
+
+Q: Create list of squares from 1 to 10
+A: [x**2 for x in range(1, 11)]
+
+Q: Filter even numbers from list
+A: [x for x in numbers if x % 2 == 0]
+
+Q: Create dict from two lists (keys and values)
+A: {k: v for k, v in zip(keys, values)}
+
+Q: Flatten nested list
+A: [item for sublist in nested for item in sublist]
+
+Q: Create dict with condition
+A: {k: v for k, v in items.items() if v > 100}
+
+## Lambda Functions (5 cards)
+
+Q: Sort list of tuples by second element
+A: sorted(data, key=lambda x: x[1])
+
+Q: Apply lambda to DataFrame column
+A: df['col'].apply(lambda x: x * 2)
+
+Q: Filter DataFrame with lambda
+A: df[df['col'].apply(lambda x: x > 100)]
+
+Q: Create column with multiple conditions in lambda
+A: df.apply(lambda row: row['a'] + row['b'] if row['c'] > 0 else 0, axis=1)
+
+Q: Group and apply lambda function
+A: df.groupby('cat')['val'].apply(lambda x: x.max() - x.min())
+
+## Error Handling (3 cards)
+
+Q: Basic try-except structure
+A: try: risky_operation() except Exception as e: handle_error(e)
+
+Q: Handle specific error type
+A: try: int(value) except ValueError: use_default()
+
+Q: Try-except-else-finally
+A: try: code except: handle else: no_error finally: always_run
+
+## Function Definitions (2 cards)
+
+Q: Function with default parameter
+A: def func(a, b=10): return a + b
+
+Q: Function with variable arguments
+A: def func(*args, **kwargs): process(args, kwargs)

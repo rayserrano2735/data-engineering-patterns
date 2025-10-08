@@ -1,0 +1,31 @@
+# Week 1 Flashcards: Python Fundamentals
+
+## Data Structures
+
+Q: When should you use a list vs a dict vs a set?
+A: List: ordered data, duplicates OK, access by index | Dict: lookup by key, structured data | Set: unique values, fast membership testing
+
+Q: How do you safely get a value from a dict that might not exist?
+A: Use .get() with default: person.get('salary', 0)
+
+Q: What's the difference between list.remove() and list.pop()?
+A: remove(value) removes first occurrence of value | pop() removes and returns last item (or item at index)
+
+Q: Why is "in" faster with sets than lists?
+A: Sets use hash tables: O(1) lookup | Lists must scan: O(n) lookup
+
+Q: What does dict.fromkeys() do and why is it useful?
+A: Creates dict from sequence, preserves order (Python 3.7+) | Useful for removing duplicates while preserving order
+
+
+Q: What does {} create in Python? How do you create an empty set?
+A: {} creates empty dict (not set). Use set() for empty set. Dict came first in Python, gets precedence for {}. type({}) returns <class 'dict'>, type(set()) returns <class 'set'>.
+
+Q: How do you create a dict from separate key and value lists?
+A: Use dict(zip(keys, values)). Example: keys=['a','b'], values=[1,2] → dict(zip(keys,values)) = {'a':1, 'b':2}. Compare to dict.fromkeys(keys) which creates keys with None values.
+
+Q: What's the difference between a function and a method?
+A: Functions are standalone (zip(), len(), sorted()), called as function(args). Methods are attached to objects (list.append(), dict.fromkeys()), called as object.method(args).
+
+Q: Which Python types and functions are built-in (don't need import)?
+A: Types: int, str, list, dict, set, tuple, bool. Functions: print(), len(), range(), enumerate(), zip(), sorted(), sum(), max(), min(). Always available. Modules like pandas, string require import.

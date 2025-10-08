@@ -1,0 +1,127 @@
+# Danaher Staff Data Engineer - PySpark Flashcards
+Version: 1.0.5-RC3
+
+---
+
+Q: What is lazy evaluation in PySpark?
+A: PySpark builds execution plan but doesn't execute until action called (.show(), .collect(), .count()). Allows query optimization across entire pipeline. Similar to SQL query optimizer.
+
+---
+
+Q: When should you use PySpark instead of dbt?
+A: PySpark for: data > 100GB needing distributed processing, data lake environments, streaming data. dbt for: data in warehouse (Snowflake), standard transformations, when team knows SQL better than Python.
+
+---
+
+Q: How do you create a PySpark DataFrame from a list of dicts?
+A: spark.createDataFrame(data) where data is list of dicts. Example: spark.createDataFrame([{'name': 'Alice', 'age': 30}])
+
+---
+
+Q: What's the difference between .filter() and .select() in PySpark?
+A: .filter() chooses which rows to keep (like WHERE in SQL). .select() chooses which columns to return (like SELECT in SQL).
+
+---
+
+Q: How do you filter with multiple conditions in PySpark?
+A: Use & for AND, | for OR (not 'and'/'or'). Must parenthesize each condition: df.filter((df.age > 25) & (df.dept == 'Engineering'))
+
+---
+
+Q: How do you perform a groupBy with multiple aggregations?
+A: df.groupBy('dept').agg(F.count('name').alias('count'), F.avg('age').alias('avg_age'), F.max('salary').alias('max_salary'))
+
+---
+
+Q: What join types does PySpark support?
+A: 'inner' (default), 'left', 'right', 'outer', 'left_anti', 'left_semi', 'cross'. Syntax: df1.join(df2, on='key', how='inner')
+
+---
+
+Q: How do you add a new column to a DataFrame?
+A: df.withColumn('new_col_name', expression). Example: df.withColumn('age_plus_10', df.age + 10)
+
+---
+
+Q: What is a window function and when do you use it?
+A: Window function operates over a group of rows (window) without collapsing them. Used for: ranking within groups, running totals, moving averages. Example: rank employees by salary within each department.
+
+---
+
+Q: How do you find top N records per group in PySpark?
+A: Use window function with rank(), then filter: window_spec = Window.partitionBy('group_col').orderBy(F.desc('value_col')); df.withColumn('rank', F.rank().over(window_spec)).filter(F.col('rank') <= N)
+
+---
+
+Q: How do you remove duplicate records in PySpark?
+A: df.dropDuplicates(['id']) to dedupe by specific columns. For "keep most recent", use row_number() window function: Window.partitionBy('id').orderBy(F.desc('timestamp')), filter row_num == 1.
+
+---
+
+Q: What's the difference between .cache() and .persist()?
+A: .cache() stores DataFrame in memory (default MEMORY_ONLY). .persist() allows specifying storage level (MEMORY_ONLY, MEMORY_AND_DISK, DISK_ONLY). Use when reusing DataFrame multiple times.
+
+---
+
+Q: When should you use broadcast joins?
+A: When joining large table with small table (< 10MB). Use F.broadcast(small_df) to send small table to all nodes, avoiding shuffle of large table.
+
+---
+
+Q: How do you write DataFrame to Parquet with partitioning?
+A: df.write.partitionBy('date').mode('overwrite').parquet('path/'). Partitioning stores data in separate folders by partition key, enabling partition pruning on reads.
+
+---
+
+Q: What's the SQL interface in PySpark?
+A: Can register DataFrame as temp view: df.createOrReplaceTempView('table_name'), then query with SQL: spark.sql("SELECT * FROM table_name WHERE age > 30")
+
+---
+
+Q: How do you handle null values in PySpark?
+A: df.na.drop() removes rows with any nulls. df.na.fill(value) replaces nulls. df.na.fill({'col1': 0, 'col2': 'unknown'}) for column-specific defaults.
+
+---
+
+Q: What's the difference between ETL and ELT?
+A: ETL: transform BEFORE loading to warehouse (clean in transit). ELT: load raw THEN transform in warehouse (preserves history, uses warehouse compute). Prefer ELT for Snowflake.
+
+---
+
+Q: How do you union two DataFrames?
+A: df1.union(df2) for same schema. For different schemas, select common columns first: df1.select('id', 'name').union(df2.select('id', 'name'))
+
+---
+
+Q: What is a left_anti join?
+A: Returns rows from left table that have NO match in right table. Useful for finding "new" records: new_df.join(existing_df, on='id', how='left_anti')
+
+---
+
+Q: How do you count rows in each partition?
+A: df.groupBy(F.spark_partition_id()).count() - useful for diagnosing data skew
+
+---
+
+Q: What's the difference between .count() and .show()?
+A: .count() is an action that triggers execution and returns number as integer. .show() is an action that triggers execution and displays rows. Both cause lazy evaluation to execute.
+
+---
+
+Q: How do you convert PySpark DataFrame to pandas?
+A: df.toPandas() - WARNING: brings all data to single machine. Only use for small DataFrames or after heavy filtering/aggregation.
+
+---
+
+Q: What's the typical performance issue in PySpark and how to diagnose?
+A: Data skew (uneven partition sizes). Diagnose with Spark UI - look for stages where one task takes much longer. Fix: repartition, salting keys, broadcast joins.
+
+---
+
+Q: When writing production PySpark, where should data quality checks go?
+A: At boundaries: (1) After reading source (validate schema, check nulls), (2) After transformations (validate business rules), (3) Before writing target (reconcile counts/sums with source).
+
+---
+
+Q: For Danaher with Snowflake, when would you actually use PySpark vs dbt?
+A: PySpark only for: processing data BEFORE warehouse ingestion, integrating with Databricks if in stack, streaming data, complex Python libraries needed. Default to dbt for transformations IN warehouse - declarative, testable, uses warehouse compute.

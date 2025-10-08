@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Wing IDE user preferences (not project settings)
+*.wpu
+*.wpr~
+.wingide/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb

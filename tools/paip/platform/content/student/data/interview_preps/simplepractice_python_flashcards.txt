@@ -1,0 +1,128 @@
+# SimplePractice Senior Data Engineer - Python Flashcards
+Version: 1.0.5-RC3
+
+---
+
+Q: What is an Airflow DAG?
+A: Directed Acyclic Graph - set of tasks with dependencies, no cycles. Defines workflow: which tasks run in which order. Used for orchestration, not transformation.
+
+---
+
+Q: What does catchup=False mean in an Airflow DAG?
+A: Don't backfill missed runs. If DAG was paused and you turn it back on, it won't try to run all the missed scheduled times. Usually want False for data pipelines.
+
+---
+
+Q: How do you set task dependencies in Airflow?
+A: Use bitshift operators: task1 >> task2 >> task3 (task1 runs first, then task2, then task3). Or use set_downstream/set_upstream methods.
+
+---
+
+Q: What is XCom in Airflow?
+A: Cross-communication - way to pass data between tasks. Push data in one task: context['task_instance'].xcom_push(key='count', value=100). Pull in another: context['task_instance'].xcom_pull(task_ids='previous_task', key='count')
+
+---
+
+Q: When do you use PythonOperator vs BashOperator in Airflow?
+A: PythonOperator: Run Python function. BashOperator: Run shell command (like 'dbt run' or 'python script.py'). Use Python when you need access to Airflow context, Bash for external commands.
+
+---
+
+Q: What is provide_context=True in PythonOperator?
+A: Passes Airflow context dict to your Python function. Context includes: execution_date (ds), task_instance, dag_run. Access with **context parameter.
+
+---
+
+Q: How do you branch in Airflow DAGs?
+A: Use BranchPythonOperator. Function returns task_id as string. Airflow executes only that branch. Example: return 'run_full_refresh' or 'run_incremental' based on data volume.
+
+---
+
+Q: What is an Airflow Sensor?
+A: Task that waits for external condition. Example: S3KeySensor waits for file to appear in S3 before proceeding. Has timeout and poke_interval (how often to check).
+
+---
+
+Q: When should you use Python vs dbt for data transformations?
+A: dbt for: transformations in warehouse, SQL logic, anything analysts need to maintain. Python for: orchestration (Airflow), API calls, complex logic hard in SQL, data quality checks with procedural logic.
+
+---
+
+Q: How do you connect to Snowflake from Python?
+A: import snowflake.connector; conn = snowflake.connector.connect(user=..., password=..., account=..., warehouse=..., database=..., schema=...); cursor = conn.cursor(); cursor.execute("SELECT...")
+
+---
+
+Q: What's the pattern for data quality checks in Python?
+A: Create DataQualityChecker class with methods: check_row_count, check_null_percentage, check_referential_integrity, check_date_range, check_duplicate_keys. Collect failures, return report, raise exception if failures found.
+
+---
+
+Q: How do you handle API pagination in Python?
+A: Use while loop with has_more flag. Increment page counter each iteration. Check response for pagination indicator (has_more, next_page_token, etc). Add rate limiting (time.sleep) between requests.
+
+---
+
+Q: How do you handle API rate limiting in Python?
+A: Use decorator with time.sleep. Track last call time, calculate wait_time = min_interval - elapsed, sleep if needed. Example: @rate_limit(max_per_second=2) limits to 2 requests/sec.
+
+---
+
+Q: What's the pattern for loading API data to Snowflake?
+A: Extract from API (handle pagination, errors), store as list/dict. Create staging table with VARIANT column. Insert JSON: cursor.execute("INSERT INTO table (raw_data) SELECT PARSE_JSON(%s)", (json.dumps(record),)). dbt parses JSON later.
+
+---
+
+Q: How do you pass Airflow variables to Python functions?
+A: In DAG: '{{ var.value.my_variable }}' (Jinja template). Airflow replaces with actual value at runtime. Store in Airflow Variables via UI or CLI. Good for passwords, API keys, config.
+
+---
+
+Q: What's the difference between customer-facing vs internal analytics?
+A: Customer-facing: stricter security (row-level), better performance (pre-aggregate), higher reliability (affects perception), unpredictable load. Internal: more flexible, can be slower, known users/patterns.
+
+---
+
+Q: How do you pre-compute metrics for customer dashboards?
+A: Python or dbt creates aggregated table. Query like: CREATE TABLE customer_metrics AS SELECT clinician_id, month, COUNT(*) as appointments FROM fct_appointments GROUP BY 1,2. Small table, fast queries, no joins.
+
+---
+
+Q: How do you reconcile data between systems in Python?
+A: Query Snowflake for total/count. Call source API for same metric. Compare with tolerance (abs(diff) < 0.01). If mismatch, investigate: check for duplicates, missing records, wrong values. Send alert with details.
+
+---
+
+Q: What does schedule_interval='0 2 * * *' mean?
+A: Cron expression: run at 2:00 AM every day. Format: minute hour day month weekday. '0 2 * * *' = minute 0, hour 2, every day, every month, every weekday.
+
+---
+
+Q: How do you handle errors in Airflow tasks?
+A: Set retries in default_args (retries=2, retry_delay=timedelta(minutes=5)). Task automatically retries on failure. For email alerts: email_on_failure=True, email=['alerts@company.com'].
+
+---
+
+Q: What's the execution_date vs actual time in Airflow?
+A: execution_date (context['ds']): logical date for the data being processed (e.g., '2024-10-08'). Actual run time might be later. Use execution_date for data queries, not actual time.
+
+---
+
+Q: How do you check for duplicate keys in SQL from Python?
+A: Query: SELECT COUNT(*) FROM (SELECT key_cols, COUNT(*) FROM table GROUP BY key_cols HAVING COUNT(*) > 1). Returns count of key combinations that appear more than once.
+
+---
+
+Q: How do you check referential integrity in SQL from Python?
+A: LEFT JOIN child to parent, WHERE parent.key IS NULL. Returns child records with no matching parent (orphaned records). Count > 0 = integrity violation.
+
+---
+
+Q: What's the pattern for Airflow DAG that runs dbt?
+A: BashOperator with bash_command='cd /dbt && dbt run --models model_name'. Common flow: extract_data >> run_dbt >> validate_results >> send_alert. dbt handles transformations, Airflow orchestrates.
+
+---
+
+Q: For SimplePractice role, what's the primary tool for transformations?
+A: dbt (SQL in Snowflake). Python only for: Airflow orchestration, API integration, complex data quality checks, pre-computation for customer dashboards. Default is dbt, Python is glue code.
+

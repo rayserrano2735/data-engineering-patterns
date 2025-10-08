@@ -1,0 +1,17 @@
+## Functions
+
+Q: What's wrong with def func(items=[])?
+A: Mutable default arguments are created once at function definition, shared across calls | Use None as default
+
+Q: How do you fix the mutable default argument bug?
+A: def func(items=None): if items is None: items = []
+
+Q: What's the benefit of type hints?
+A: Document expected types, catch errors, show production-quality code in interviews
+
+Q: How do you return multiple values from a function?
+A: return val1, val2, val3 (returns tuple) | Unpack: a, b, c = func()
+
+Q: What's *args and **kwargs?
+A: *args: variable positional arguments (tuple) | **kwargs: variable keyword arguments (dict)
+

@@ -1,0 +1,17 @@
+## Comprehensions
+
+Q: What's the syntax pattern for list comprehensions?
+A: [expression for item in sequence if condition]
+
+Q: Write comprehension to get squares of positive numbers from a list
+A: [x**2 for x in numbers if x > 0]
+
+Q: How do you create a dict comprehension?
+A: {key_expr: value_expr for item in sequence if condition}
+
+Q: What's the difference between [x for x in items] and list(items)?
+A: Comprehension is more Pythonic and can include filtering/transformation | list() just converts
+
+Q: Write comprehension to flatten [[1,2], [3,4]] to [1,2,3,4]
+A: [item for sublist in nested for item in sublist]
+

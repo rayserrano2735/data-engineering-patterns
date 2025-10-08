@@ -1,0 +1,17 @@
+## Strings
+
+Q: How do you remove whitespace from both ends of a string?
+A: text.strip()  # Also: lstrip() for left, rstrip() for right
+
+Q: How do you check if string contains substring (case-insensitive)?
+A: "keyword" in text.lower()
+
+Q: Write f-string to format number with commas and 2 decimals
+A: f"{value:,.2f}"
+
+Q: How do you split email into username and domain?
+A: username, domain = email.split('@')
+
+Q: How do you remove punctuation from a string?
+A: import string; text.translate(str.maketrans('', '', string.punctuation))
+

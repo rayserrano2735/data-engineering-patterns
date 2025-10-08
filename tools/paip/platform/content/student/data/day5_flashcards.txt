@@ -1,0 +1,17 @@
+## Lambda
+
+Q: When should you use lambda vs def?
+A: Lambda: one-line operations, sorting keys, inline callbacks | def: everything else
+
+Q: Write lambda to sort list of dicts by 'price' descending
+A: sorted(items, key=lambda x: x['price'], reverse=True)
+
+Q: How do you sort by multiple keys?
+A: Use tuple: key=lambda x: (x['region'], -x['sales'])  # region asc, sales desc
+
+Q: What does this do: map(lambda x: x*2, numbers)?
+A: Applies function to each element, returns map object (need list() to see results)
+
+Q: Write lambda to get second element of tuple for sorting
+A: key=lambda x: x[1]
+

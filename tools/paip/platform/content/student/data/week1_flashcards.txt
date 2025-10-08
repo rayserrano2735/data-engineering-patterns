@@ -1,0 +1,237 @@
+# Week 1 Flashcards: Python Fundamentals
+
+## Data Structures
+
+Q: When should you use a list vs a dict vs a set?
+A: List: ordered data, duplicates OK, access by index | Dict: lookup by key, structured data | Set: unique values, fast membership testing
+
+Q: How do you safely get a value from a dict that might not exist?
+A: Use .get() with default: person.get('salary', 0)
+
+Q: What's the difference between list.remove() and list.pop()?
+A: remove(value) removes first occurrence of value | pop() removes and returns last item (or item at index)
+
+Q: Why is "in" faster with sets than lists?
+A: Sets use hash tables: O(1) lookup | Lists must scan: O(n) lookup
+
+Q: What does dict.fromkeys() do and why is it useful?
+A: Creates dict from sequence, preserves order (Python 3.7+) | Useful for removing duplicates while preserving order
+
+## Comprehensions
+
+Q: What's the syntax pattern for list comprehensions?
+A: [expression for item in sequence if condition]
+
+Q: Write comprehension to get squares of positive numbers from a list
+A: [x**2 for x in numbers if x > 0]
+
+Q: How do you create a dict comprehension?
+A: {key_expr: value_expr for item in sequence if condition}
+
+Q: What's the difference between [x for x in items] and list(items)?
+A: Comprehension is more Pythonic and can include filtering/transformation | list() just converts
+
+Q: Write comprehension to flatten [[1,2], [3,4]] to [1,2,3,4]
+A: [item for sublist in nested for item in sublist]
+
+## Functions
+
+Q: What's wrong with def func(items=[])?
+A: Mutable default arguments are created once at function definition, shared across calls | Use None as default
+
+Q: How do you fix the mutable default argument bug?
+A: def func(items=None): if items is None: items = []
+
+Q: What's the benefit of type hints?
+A: Document expected types, catch errors, show production-quality code in interviews
+
+Q: How do you return multiple values from a function?
+A: return val1, val2, val3 (returns tuple) | Unpack: a, b, c = func()
+
+Q: What's *args and **kwargs?
+A: *args: variable positional arguments (tuple) | **kwargs: variable keyword arguments (dict)
+
+## Lambda
+
+Q: When should you use lambda vs def?
+A: Lambda: one-line operations, sorting keys, inline callbacks | def: everything else
+
+Q: Write lambda to sort list of dicts by 'price' descending
+A: sorted(items, key=lambda x: x['price'], reverse=True)
+
+Q: How do you sort by multiple keys?
+A: Use tuple: key=lambda x: (x['region'], -x['sales'])  # region asc, sales desc
+
+Q: What does this do: map(lambda x: x*2, numbers)?
+A: Applies function to each element, returns map object (need list() to see results)
+
+Q: Write lambda to get second element of tuple for sorting
+A: key=lambda x: x[1]
+
+## Strings
+
+Q: How do you remove whitespace from both ends of a string?
+A: text.strip()  # Also: lstrip() for left, rstrip() for right
+
+Q: How do you check if string contains substring (case-insensitive)?
+A: "keyword" in text.lower()
+
+Q: Write f-string to format number with commas and 2 decimals
+A: f"{value:,.2f}"
+
+Q: How do you split email into username and domain?
+A: username, domain = email.split('@')
+
+Q: How do you remove punctuation from a string?
+A: import string; text.translate(str.maketrans('', '', string.punctuation))
+
+## Common Patterns
+
+Q: How do you remove duplicates from a list while preserving order?
+A: list(dict.fromkeys(items))
+
+Q: How do you count occurrences in a list without Counter?
+A: counts = {}; for item in items: counts[item] = counts.get(item, 0) + 1
+
+Q: Write code to merge two dicts, keeping higher values for overlapping keys
+A: merged = d1.copy(); for k, v in d2.items(): if k not in merged or v > merged[k]: merged[k] = v
+
+Q: How do you iterate over dict keys and values?
+A: for key, value in dict.items():
+
+Q: What's the Pythonic way to check if list is empty?
+A: if not my_list: (empty lists are falsy)
+
+## Interview Connection (Week 1 → Week 2)
+
+Q: How does list comprehension relate to pandas DataFrame filtering?
+A: Same logic: [x for x in items if condition] becomes df[df['col'] > value]
+
+Q: How does lambda sorting relate to DataFrame.sort_values()?
+A: Lambda: sorted(items, key=lambda x: x['field']) | Pandas: df.sort_values('field')
+
+Q: How do dicts relate to DataFrames?
+A: Each dict becomes a DataFrame row | List of dicts → DataFrame
+
+Q: Why learn manual groupby in Week 1 if pandas has groupby()?
+A: Understanding the concept makes pandas groupby intuitive | Shows what's happening under the hood
+
+Q: How does string.strip() relate to pandas str accessor?
+A: Same operation: string.strip() becomes df['col'].str.strip()
+
+Q: Remove duplicates from [1, 2, 2, 3] preserving order
+A: list(dict.fromkeys([1, 2, 2, 3])) → [1, 2, 3]
+
+Q: Merge dicts {'a': 10, 'b': 20} and {'b': 25, 'c': 30}, keep higher values
+A: merged = d1.copy(); for k,v in d2.items(): merged[k] = max(merged.get(k,0), v)
+
+Q: Get squares of positive numbers from [-2, 0, 1, 2, 3]
+A: [x**2 for x in nums if x > 0] → [1, 4, 9]
+
+Q: Sort [('Alice', 85), ('Bob', 92)] by score desc
+A: sorted(data, key=lambda x: -x[1]) or sorted(data, key=lambda x: x[1], reverse=True)
+
+Q: Count word frequency in ['apple', 'banana', 'apple']
+A: {word: lst.count(word) for word in set(lst)} or use Counter(lst)
+
+Q: Format 1234567.89 as currency $1,234,567.89
+A: f"${amount:,.2f}"
+
+Q: Filter list to numbers divisible by 3
+A: [n for n in nums if n % 3 == 0] or list(filter(lambda x: x % 3 == 0, nums))
+
+Q: Create dict mapping names to lengths: ['Alice', 'Bob']
+A: {name: len(name) for name in names} → {'Alice': 5, 'Bob': 3}
+
+Q: Flatten [1, [2, 3], 4] to [1, 2, 3, 4]
+A: [item for sublist in nested for item in (sublist if isinstance(sublist, list) else [sublist])]
+
+Q: Get top 3 values from [10, 30, 20, 50, 40]
+A: sorted(nums, reverse=True)[:3] or nlargest(3, nums)
+
+Q: Clean and validate emails: strip, lowercase, has @ and .
+A: [e.strip().lower() for e in emails if '@' in e and '.' in e.split('@')[1]]
+
+Q: From dicts [{'name': 'Alice', 'score': 85}], map name→score
+A: {d['name']: d['score'] for d in data}
+
+Q: Test if list is empty before processing
+A: if not lst: return default_value
+
+Q: Handle None in function parameter
+A: def func(data=None): data = data if data is not None else []
+
+Q: Test DataFrame has expected columns
+A: assert set(df.columns) == {'col1', 'col2'}
+
+Q: list.insert(index, item) - add element at specific position
+A: lst.insert(0, 99) adds 99 at start, lst.insert(2, 50) adds 50 at index 2
+
+Q: list.remove(value) vs list.pop(index) - difference?
+A: remove() deletes first occurrence of value, pop() removes & returns at index
+
+Q: list.index(value) - find position of element
+A: [1,2,3,2].index(2) returns 1 (first occurrence), KeyError if not found
+
+Q: dict.setdefault(key, default) - purpose?
+A: Sets key to default if missing, returns value. d.setdefault('x', 0) ensures 'x' exists
+
+Q: dict.update(other) - merge dictionaries
+A: d.update({'c': 3, 'd': 4}) adds/updates multiple keys at once
+
+Q: dict.popitem() - remove from dict
+A: Removes and returns arbitrary (key, value) tuple, useful for destructive iteration
+
+Q: set.discard(value) vs set.remove(value) - difference?
+A: discard() no error if missing, remove() raises KeyError if missing
+
+Q: set.update(iterable) - add multiple elements
+A: s.update([4, 5, 6]) adds multiple elements to set
+
+Q: str.find(substring) vs str.index(substring) - difference?
+A: find() returns -1 if not found, index() raises ValueError if not found
+
+Q: str.startswith(prefix) and str.endswith(suffix)
+A: 'hello.txt'.endswith('.txt') → True, 'hello'.startswith('he') → True
+
+Q: str.title() - capitalize words
+A: 'hello world'.title() → 'Hello World'
+
+Q: enumerate(iterable) - purpose and output
+A: enumerate(['a','b']) → [(0,'a'), (1,'b')], adds index to iteration
+
+Q: zip(iter1, iter2) - combine iterables
+A: zip([1,2], ['a','b']) → [(1,'a'), (2,'b')], pairs elements from multiple lists
+
+Q: dict.fromkeys(keys, value) - create dict with default value
+A: dict.fromkeys(['a','b','c'], 0) → {'a': 0, 'b': 0, 'c': 0}
+
+Q: all(iterable) and any(iterable) - boolean checks
+A: all([True, True, False]) → False, any([False, False, True]) → True
+
+Q: filter(function, iterable) - purpose
+A: filter(lambda x: x>0, [-1,0,1,2]) → iterator of [1,2], filters by condition
+
+Q: map(function, iterable) - purpose
+A: map(lambda x: x*2, [1,2,3]) → iterator of [2,4,6], applies function to each
+
+Q: sorted(iterable, key=, reverse=) - sort with custom key
+A: sorted(data, key=lambda x: x[1], reverse=True) sorts by 2nd element descending
+
+Q: list.clear() - remove all elements
+A: lst.clear() empties list, becomes []
+
+Q: dict.clear() - remove all key-value pairs
+A: d.clear() empties dict, becomes {}
+
+Q: How to copy a list?
+A: lst[:] or lst.copy() or list(lst) - all create shallow copy
+
+Q: How to reverse a list?
+A: lst.reverse() (in-place) or lst[::-1] (new list) or list(reversed(lst))
+
+Q: str.join(iterable) - combine strings
+A: ', '.join(['a','b','c']) → 'a, b, c', joins with separator
+
+Q: str.split(sep) - split string into list
+A: 'a,b,c'.split(',') → ['a','b','c'], splits on separator
