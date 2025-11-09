@@ -181,7 +181,7 @@ def run_with_defaults():
     """Run with hardcoded default values for backward compatibility."""
     
     # ===== QUICK TEST CONFIGURATION FOR WING IDE =====
-    TEST_MODE = "Aitana-x"  # ← Change this to switch between test configurations
+    TEST_MODE = "dropbox_alba"  # ← Change this to switch between test configurations
     
     # Define your test configurations here
     TEST_CONFIGS = {
@@ -199,7 +199,7 @@ def run_with_defaults():
         },
         "large": {
             "input": "documents/large",
-            "output": "documents/large/chunked", 
+            "output": "documents/large/chunked",
             "size": 1000,
             "description": "Large documents"
         },
@@ -220,13 +220,19 @@ def run_with_defaults():
             "output": "C:/Users/rayse/Dropbox/Projects/GitHub/Digiland/citizens/Aitana/banks/chunked-x",
             "size": 375,
             "description": "Memory Banks"
-        },        
+        },
         "dropbox_sage": {
             "input": "C:/Users/rayse/Dropbox/Projects/GitHub/Digiland/citizens/Sage_Critical/memory_bank",
             "output": "C:/Users/rayse/Dropbox/Projects/GitHub/Digiland/citizens/Sage_Critical/memory_bank/chunked",
             "size": 375,
             "description": "Memory Banks"
-        }        
+        },
+        "dropbox_alba": {
+            "input": "C:/Users/rayse/Dropbox/Projects/GitHub/Digiland/citizens/Alba/MemoryBank",
+            "output": "C:/Users/rayse/Dropbox/Projects/GitHub/Digiland/citizens/Alba/MemoryBank/chunked",
+            "size": 375,
+            "description": "Memory Banks"
+        }
     }
     
     # Get the selected configuration
